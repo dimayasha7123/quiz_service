@@ -38,63 +38,69 @@ type Updates struct {
 
 type Update struct {
 	ID       int
+	ChatId   int
 	Username string
 	Text     string
 	Date     int
 }
 
+const (
+	configPath = "./config/config.yaml"
+)
+
 func main() {
-	b, errr := os.ReadFile("./config/config.yaml")
+	b, errr := os.ReadFile(configPath)
 	if errr != nil {
 		log.Fatal(errr)
 	}
 
 	c, errc := config.ParseConfig(b)
-
 	if errc != nil {
 		log.Fatal(errc)
 	}
 
+	fmt.Printf("Config = %+v\n", c)
+
 	cl := http.Client{Timeout: 10 * time.Second}
 
-	getUrl := fmt.Sprintf("https://api.telegram.org/bot%s/getUpdates", c.ApiKeys.Telegram)
-
-	mmap := make(map[int]Update)
+	var lastUpdateId int
 
 	for {
+		getUrl := fmt.Sprintf("https://api.telegram.org/bot%s/getUpdates?offset=%d", c.ApiKeys.Telegram, lastUpdateId+1)
 		r, err := cl.Get(getUrl)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		b, err := ioutil.ReadAll(r.Body)
+
 		updates := Updates{}
 		errj := json.Unmarshal(b, &updates)
 		if errj != nil {
 			log.Fatal(errj)
 		}
+
 		if updates.Ok {
 			for _, u := range updates.Result {
-				_, ok := mmap[u.UpdateID]
-				if !ok {
-					upd := Update{}
+				upd := Update{}
 
-					upd.ID = u.Message.From.ID
-					upd.Text = u.Message.Text
-					upd.Username = u.Message.From.Username
-					upd.Date = u.Message.Date
+				upd.ID = u.UpdateID
+				upd.ChatId = u.Message.From.ID
+				upd.Text = u.Message.Text
+				upd.Username = u.Message.From.Username
+				upd.Date = u.Message.Date
 
-					mmap[u.UpdateID] = upd
+				lastUpdateId = upd.ID
 
-					fmt.Printf("Get %+v\n", upd)
+				fmt.Printf("Get %+v\n", upd)
 
-					sendUrl := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage?chat_id=%d&text=%s",
-						c.ApiKeys.Telegram, upd.ID, "I get <"+upd.Text+">")
-					_, errp := cl.Post(sendUrl, "text/plain", nil)
-					if errp != nil {
-						fmt.Printf("Error = %v\n", errp)
-					} else {
-						fmt.Printf("I send smth\n")
-					}
+				sendUrl := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage?chat_id=%d&text=%s",
+					c.ApiKeys.Telegram, upd.ChatId, "I get <"+upd.Text+">")
+				_, errp := cl.Post(sendUrl, "text/plain", nil)
+				if errp != nil {
+					fmt.Printf("Error = %v\n", errp)
+				} else {
+					fmt.Printf("I send smth\n")
 				}
 			}
 		} else {
