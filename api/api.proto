@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+option go_package = "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/api";
+
+package api;
+
+import "google/protobuf/empty.proto";
+
+message Quiz {
+  int64 ID = 1;
+  string Name = 2;
+}
+
+message QuizID {
+
+}
+
+message QuizList {
+  repeated Quiz QList = 1;
+}
+
+message QuizParty {
+  int64 UserID = 1;
+  int64 QuizID = 2;
+}
+
+message QuizPartyID {
+  int64 qPartyID = 1;
+  int64 UserID = 2;
+}
+
+message AnswerOption {
+  int64 Number = 1;
+  string Title = 2;
+}
+
+message Question {
+  int64 ID = 1;
+  string Title = 2;
+  repeated AnswerOption AnswerOptions = 3;
+}
+
+message QuestionOrNil {
+  bool ok = 1;
+  optional Question question = 2;
+}
+
+message Answer {
+  int64 UserID = 1;
+  int64 QuestionID = 2;
+  repeated int32 RightOptionNumbers = 3;
+}
+
+message PartyResults {
+  int64 PointCount = 1;
+  int64 PenaltyTime = 2;
+  int64 Place = 3;
+}
+
+message SingleTop{
+  PartyResults UserResults = 1;
+  GlobalTop QuizTop = 2;
+}
+
+message GlobalTop{
+  repeated PartyResults Results = 1;
+}
+
+service QuizService {
+  rpc GetQuizList(google.protobuf.Empty) returns (QuizList) {}
+  rpc CreateQuizParty(QuizParty) returns (QuizPartyID) {}
+  rpc GetNextQuestion(QuizPartyID) returns (QuestionOrNil) {}
+  rpc SendAnswer(Answer) returns (google.protobuf.Empty) {}
+  rpc GetSingleTop(QuizPartyID) returns (SingleTop) {}
+  rpc GetGlobalQuizTop(QuizID) returns (GlobalTop) {}
+}
