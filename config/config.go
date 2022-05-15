@@ -12,6 +12,7 @@ type ApiKeys struct {
 
 type Config struct {
 	ApiKeys  ApiKeys
+	Dsn      string
 	QuizTags []string
 }
 
@@ -21,6 +22,7 @@ type configFile struct {
 		Quiz     string `yaml:"quiz"`
 	} `yaml:"apiKeys"`
 	QuizTags []string `yaml:"quizTags"`
+	Dsn      string   `yaml:"dsn"`
 }
 
 func ParseConfig(fileBytes []byte) (*Config, error) {
@@ -34,6 +36,7 @@ func ParseConfig(fileBytes []byte) (*Config, error) {
 
 	c.ApiKeys.Telegram = cf.APIKeys.Telegram
 	c.ApiKeys.Quiz = cf.APIKeys.Quiz
+	c.Dsn = cf.Dsn
 
 	c.QuizTags = make([]string, len(cf.QuizTags))
 	for i, q := range cf.QuizTags {
@@ -43,20 +46,21 @@ func ParseConfig(fileBytes []byte) (*Config, error) {
 	return &c, nil
 }
 
-func ConfigWriter(c *Config) ([]byte, error) {
-	cf := configFile{}
-	cf.APIKeys.Telegram = c.ApiKeys.Telegram
-	cf.APIKeys.Quiz = c.ApiKeys.Quiz
-
-	cf.QuizTags = make([]string, len(c.QuizTags))
-	for i, q := range c.QuizTags {
-		cf.QuizTags[i] = q
-	}
-
-	bytes, err := yaml.Marshal(cf)
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes, nil
-}
+//func ConfigWriter(c *Config) ([]byte, error) {
+//	cf := configFile{}
+//	cf.APIKeys.Telegram = c.ApiKeys.Telegram
+//	cf.APIKeys.Quiz = c.ApiKeys.Quiz
+//	cf.APIKeys.Dsn = c.ApiKeys.Dsn
+//
+//	cf.QuizTags = make([]string, len(c.QuizTags))
+//	for i, q := range c.QuizTags {
+//		cf.QuizTags[i] = q
+//	}
+//
+//	bytes, err := yaml.Marshal(cf)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return bytes, nil
+//}

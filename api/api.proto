@@ -11,10 +11,6 @@ message Quiz {
   string Name = 2;
 }
 
-message QuizID {
-
-}
-
 message QuizList {
   repeated Quiz QList = 1;
 }
@@ -24,20 +20,10 @@ message QuizParty {
   int64 QuizID = 2;
 }
 
-message QuizPartyID {
-  int64 qPartyID = 1;
-  int64 UserID = 2;
-}
-
-message AnswerOption {
-  int64 Number = 1;
-  string Title = 2;
-}
-
 message Question {
   int64 ID = 1;
   string Title = 2;
-  repeated AnswerOption AnswerOptions = 3;
+  repeated string AnswerOptions = 3;
 }
 
 message QuestionOrNil {
@@ -66,11 +52,30 @@ message GlobalTop{
   repeated PartyResults Results = 1;
 }
 
+message Username {
+  string Name = 1;
+}
+
+message ID {
+  int64 ID = 1;
+}
+
+message UserID {
+
+}
+
+message AnswerReq {
+  int64 UserID = 1;
+  int64 AnswerID = 2;
+}
+
 service QuizService {
+  rpc AddUser(Username) returns(ID) {} // UserID
   rpc GetQuizList(google.protobuf.Empty) returns (QuizList) {}
-  rpc CreateQuizParty(QuizParty) returns (QuizPartyID) {}
-  rpc GetNextQuestion(QuizPartyID) returns (QuestionOrNil) {}
+  rpc CreateQuizParty(QuizParty) returns (ID) {} // QuizID
+  rpc GetNextQuestion(ID) returns (QuestionOrNil) {} // QuizID
   rpc SendAnswer(Answer) returns (google.protobuf.Empty) {}
-  rpc GetSingleTop(QuizPartyID) returns (SingleTop) {}
-  rpc GetGlobalQuizTop(QuizID) returns (GlobalTop) {}
+  rpc GetQuizPartyTop() returns () {}
+  rpc GetQuizTop(QuizPartyID) returns (SingleTop) {}
+  rpc GetGlobalQuizTop(ID) returns (GlobalTop) {}
 }
