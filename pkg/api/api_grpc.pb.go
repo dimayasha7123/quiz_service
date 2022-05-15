@@ -23,11 +23,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type QuizServiceClient interface {
+	AddUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*UserID, error)
 	GetQuizList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*QuizList, error)
-	CreateQuizParty(ctx context.Context, in *QuizParty, opts ...grpc.CallOption) (*QuizPartyID, error)
-	GetNextQuestion(ctx context.Context, in *QuizPartyID, opts ...grpc.CallOption) (*QuestionOrNil, error)
-	SendAnswer(ctx context.Context, in *Answer, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetSingleTop(ctx context.Context, in *QuizPartyID, opts ...grpc.CallOption) (*SingleTop, error)
+	CreateQuizParty(ctx context.Context, in *QuizUserInfo, opts ...grpc.CallOption) (*QuizPartyID, error)
+	GetNextQuestion(ctx context.Context, in *QuizPartyInfo, opts ...grpc.CallOption) (*QuestionOrNil, error)
+	SendAnswer(ctx context.Context, in *SendAnswerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetQuizPartyTop(ctx context.Context, in *QuizPartyInfo, opts ...grpc.CallOption) (*SingleTop, error)
+	GetQuizTop(ctx context.Context, in *QuizUserInfo, opts ...grpc.CallOption) (*SingleTop, error)
 	GetGlobalQuizTop(ctx context.Context, in *QuizID, opts ...grpc.CallOption) (*GlobalTop, error)
 }
 
@@ -39,6 +41,15 @@ func NewQuizServiceClient(cc grpc.ClientConnInterface) QuizServiceClient {
 	return &quizServiceClient{cc}
 }
 
+func (c *quizServiceClient) AddUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*UserID, error) {
+	out := new(UserID)
+	err := c.cc.Invoke(ctx, "/api.QuizService/AddUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *quizServiceClient) GetQuizList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*QuizList, error) {
 	out := new(QuizList)
 	err := c.cc.Invoke(ctx, "/api.QuizService/GetQuizList", in, out, opts...)
@@ -48,7 +59,7 @@ func (c *quizServiceClient) GetQuizList(ctx context.Context, in *emptypb.Empty, 
 	return out, nil
 }
 
-func (c *quizServiceClient) CreateQuizParty(ctx context.Context, in *QuizParty, opts ...grpc.CallOption) (*QuizPartyID, error) {
+func (c *quizServiceClient) CreateQuizParty(ctx context.Context, in *QuizUserInfo, opts ...grpc.CallOption) (*QuizPartyID, error) {
 	out := new(QuizPartyID)
 	err := c.cc.Invoke(ctx, "/api.QuizService/CreateQuizParty", in, out, opts...)
 	if err != nil {
@@ -57,7 +68,7 @@ func (c *quizServiceClient) CreateQuizParty(ctx context.Context, in *QuizParty, 
 	return out, nil
 }
 
-func (c *quizServiceClient) GetNextQuestion(ctx context.Context, in *QuizPartyID, opts ...grpc.CallOption) (*QuestionOrNil, error) {
+func (c *quizServiceClient) GetNextQuestion(ctx context.Context, in *QuizPartyInfo, opts ...grpc.CallOption) (*QuestionOrNil, error) {
 	out := new(QuestionOrNil)
 	err := c.cc.Invoke(ctx, "/api.QuizService/GetNextQuestion", in, out, opts...)
 	if err != nil {
@@ -66,7 +77,7 @@ func (c *quizServiceClient) GetNextQuestion(ctx context.Context, in *QuizPartyID
 	return out, nil
 }
 
-func (c *quizServiceClient) SendAnswer(ctx context.Context, in *Answer, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *quizServiceClient) SendAnswer(ctx context.Context, in *SendAnswerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/api.QuizService/SendAnswer", in, out, opts...)
 	if err != nil {
@@ -75,9 +86,18 @@ func (c *quizServiceClient) SendAnswer(ctx context.Context, in *Answer, opts ...
 	return out, nil
 }
 
-func (c *quizServiceClient) GetSingleTop(ctx context.Context, in *QuizPartyID, opts ...grpc.CallOption) (*SingleTop, error) {
+func (c *quizServiceClient) GetQuizPartyTop(ctx context.Context, in *QuizPartyInfo, opts ...grpc.CallOption) (*SingleTop, error) {
 	out := new(SingleTop)
-	err := c.cc.Invoke(ctx, "/api.QuizService/GetSingleTop", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.QuizService/GetQuizPartyTop", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *quizServiceClient) GetQuizTop(ctx context.Context, in *QuizUserInfo, opts ...grpc.CallOption) (*SingleTop, error) {
+	out := new(SingleTop)
+	err := c.cc.Invoke(ctx, "/api.QuizService/GetQuizTop", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -97,11 +117,13 @@ func (c *quizServiceClient) GetGlobalQuizTop(ctx context.Context, in *QuizID, op
 // All implementations must embed UnimplementedQuizServiceServer
 // for forward compatibility
 type QuizServiceServer interface {
+	AddUser(context.Context, *User) (*UserID, error)
 	GetQuizList(context.Context, *emptypb.Empty) (*QuizList, error)
-	CreateQuizParty(context.Context, *QuizParty) (*QuizPartyID, error)
-	GetNextQuestion(context.Context, *QuizPartyID) (*QuestionOrNil, error)
-	SendAnswer(context.Context, *Answer) (*emptypb.Empty, error)
-	GetSingleTop(context.Context, *QuizPartyID) (*SingleTop, error)
+	CreateQuizParty(context.Context, *QuizUserInfo) (*QuizPartyID, error)
+	GetNextQuestion(context.Context, *QuizPartyInfo) (*QuestionOrNil, error)
+	SendAnswer(context.Context, *SendAnswerRequest) (*emptypb.Empty, error)
+	GetQuizPartyTop(context.Context, *QuizPartyInfo) (*SingleTop, error)
+	GetQuizTop(context.Context, *QuizUserInfo) (*SingleTop, error)
 	GetGlobalQuizTop(context.Context, *QuizID) (*GlobalTop, error)
 	mustEmbedUnimplementedQuizServiceServer()
 }
@@ -110,20 +132,26 @@ type QuizServiceServer interface {
 type UnimplementedQuizServiceServer struct {
 }
 
+func (UnimplementedQuizServiceServer) AddUser(context.Context, *User) (*UserID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddUser not implemented")
+}
 func (UnimplementedQuizServiceServer) GetQuizList(context.Context, *emptypb.Empty) (*QuizList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetQuizList not implemented")
 }
-func (UnimplementedQuizServiceServer) CreateQuizParty(context.Context, *QuizParty) (*QuizPartyID, error) {
+func (UnimplementedQuizServiceServer) CreateQuizParty(context.Context, *QuizUserInfo) (*QuizPartyID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateQuizParty not implemented")
 }
-func (UnimplementedQuizServiceServer) GetNextQuestion(context.Context, *QuizPartyID) (*QuestionOrNil, error) {
+func (UnimplementedQuizServiceServer) GetNextQuestion(context.Context, *QuizPartyInfo) (*QuestionOrNil, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNextQuestion not implemented")
 }
-func (UnimplementedQuizServiceServer) SendAnswer(context.Context, *Answer) (*emptypb.Empty, error) {
+func (UnimplementedQuizServiceServer) SendAnswer(context.Context, *SendAnswerRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendAnswer not implemented")
 }
-func (UnimplementedQuizServiceServer) GetSingleTop(context.Context, *QuizPartyID) (*SingleTop, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSingleTop not implemented")
+func (UnimplementedQuizServiceServer) GetQuizPartyTop(context.Context, *QuizPartyInfo) (*SingleTop, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetQuizPartyTop not implemented")
+}
+func (UnimplementedQuizServiceServer) GetQuizTop(context.Context, *QuizUserInfo) (*SingleTop, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetQuizTop not implemented")
 }
 func (UnimplementedQuizServiceServer) GetGlobalQuizTop(context.Context, *QuizID) (*GlobalTop, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGlobalQuizTop not implemented")
@@ -139,6 +167,24 @@ type UnsafeQuizServiceServer interface {
 
 func RegisterQuizServiceServer(s grpc.ServiceRegistrar, srv QuizServiceServer) {
 	s.RegisterService(&QuizService_ServiceDesc, srv)
+}
+
+func _QuizService_AddUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(User)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QuizServiceServer).AddUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.QuizService/AddUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QuizServiceServer).AddUser(ctx, req.(*User))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _QuizService_GetQuizList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -160,7 +206,7 @@ func _QuizService_GetQuizList_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _QuizService_CreateQuizParty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QuizParty)
+	in := new(QuizUserInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -172,13 +218,13 @@ func _QuizService_CreateQuizParty_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/api.QuizService/CreateQuizParty",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QuizServiceServer).CreateQuizParty(ctx, req.(*QuizParty))
+		return srv.(QuizServiceServer).CreateQuizParty(ctx, req.(*QuizUserInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _QuizService_GetNextQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QuizPartyID)
+	in := new(QuizPartyInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -190,13 +236,13 @@ func _QuizService_GetNextQuestion_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/api.QuizService/GetNextQuestion",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QuizServiceServer).GetNextQuestion(ctx, req.(*QuizPartyID))
+		return srv.(QuizServiceServer).GetNextQuestion(ctx, req.(*QuizPartyInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _QuizService_SendAnswer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Answer)
+	in := new(SendAnswerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -208,25 +254,43 @@ func _QuizService_SendAnswer_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/api.QuizService/SendAnswer",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QuizServiceServer).SendAnswer(ctx, req.(*Answer))
+		return srv.(QuizServiceServer).SendAnswer(ctx, req.(*SendAnswerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _QuizService_GetSingleTop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QuizPartyID)
+func _QuizService_GetQuizPartyTop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuizPartyInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QuizServiceServer).GetSingleTop(ctx, in)
+		return srv.(QuizServiceServer).GetQuizPartyTop(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.QuizService/GetSingleTop",
+		FullMethod: "/api.QuizService/GetQuizPartyTop",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QuizServiceServer).GetSingleTop(ctx, req.(*QuizPartyID))
+		return srv.(QuizServiceServer).GetQuizPartyTop(ctx, req.(*QuizPartyInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QuizService_GetQuizTop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuizUserInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QuizServiceServer).GetQuizTop(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.QuizService/GetQuizTop",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QuizServiceServer).GetQuizTop(ctx, req.(*QuizUserInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -257,6 +321,10 @@ var QuizService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*QuizServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "AddUser",
+			Handler:    _QuizService_AddUser_Handler,
+		},
+		{
 			MethodName: "GetQuizList",
 			Handler:    _QuizService_GetQuizList_Handler,
 		},
@@ -273,8 +341,12 @@ var QuizService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _QuizService_SendAnswer_Handler,
 		},
 		{
-			MethodName: "GetSingleTop",
-			Handler:    _QuizService_GetSingleTop_Handler,
+			MethodName: "GetQuizPartyTop",
+			Handler:    _QuizService_GetQuizPartyTop_Handler,
+		},
+		{
+			MethodName: "GetQuizTop",
+			Handler:    _QuizService_GetQuizTop_Handler,
 		},
 		{
 			MethodName: "GetGlobalQuizTop",
