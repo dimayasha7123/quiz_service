@@ -1,4 +1,4 @@
-package mv
+package mw
 
 import (
 	"context"
@@ -11,7 +11,7 @@ func LogInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServer
 	if err != nil {
 		log.Println(info.FullMethod, req, err)
 	} else {
-		log.Println(info.FullMethod, req)
+		log.Println(info.FullMethod, req, resp)
 	}
 	return resp, err
 }

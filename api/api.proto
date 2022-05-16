@@ -30,7 +30,7 @@ message QuestionOrNil {
 }
 
 message SendAnswerRequest {
-  int64 UserID = 1;;
+  int64 UserID = 1;
   int64 QuestionID = 2;
   repeated int64 RightOptionNumbers = 3;
 }
