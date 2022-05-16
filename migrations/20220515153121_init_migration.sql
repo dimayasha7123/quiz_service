@@ -26,6 +26,13 @@ create table response_report
     correct          bool    not null,
     penalty_time     integer not null
 );
+insert into quiz (name)
+values ('JavaScript'),
+       ('Linux'),
+       ('Docker'),
+       ('BASH'),
+       ('Kubernetes'),
+       ('HTML');
 -- +goose StatementEnd
 
 -- +goose Down

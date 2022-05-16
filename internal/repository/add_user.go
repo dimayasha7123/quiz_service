@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-func (r *repository) AddUser(ctx context.Context, name string) (ID int64, err error) {
+func (r *repository) AddUser(ctx context.Context, name string) (int64, error) {
 	query := `
 		insert into user_account (
 			name
@@ -12,6 +12,7 @@ func (r *repository) AddUser(ctx context.Context, name string) (ID int64, err er
 			$1
 		) returning id;
 	`
-	err = r.pool.QueryRow(ctx, query, name).Scan(&ID)
-	return
+	var ID int64
+	err := r.pool.QueryRow(ctx, query, name).Scan(&ID)
+	return ID, err
 }
