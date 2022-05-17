@@ -16,7 +16,7 @@ func boolStrOrNilToBool(s string) bool {
 }
 
 func (qac *quizPartyApiClient) GetParty(tag string) (*models.Party, error) {
-	getUrl := fmt.Sprintf("https://quizapi.io/api/v1/questions?apiKey=%s&tags=%s", qac.apiKey, tag)
+	getUrl := fmt.Sprintf("https://quizapi.io/api/v1/questions?apiKey=%s&tags=%s&limit=%d", qac.apiKey, tag, questCount)
 	resp, err := qac.cl.Get(getUrl)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (qac *quizPartyApiClient) GetParty(tag string) (*models.Party, error) {
 
 	for i, q := range pd {
 
-		answers := make([]models.Answer, 0, ansCount)
+		answers := make([]models.Answer, 0, maxAnsCount)
 
 		if q.Answers.AnswerA != "" {
 			answers = append(answers, models.Answer{Title: q.Answers.AnswerA})
@@ -58,23 +58,29 @@ func (qac *quizPartyApiClient) GetParty(tag string) (*models.Party, error) {
 			answers = append(answers, models.Answer{Title: q.Answers.AnswerF})
 		}
 
+		answersCorrect := make([]bool, maxAnsCount)
+
 		if boolStrOrNilToBool(q.CorrectAnswers.AnswerACorrect) {
-			answers[1].Correct = true
+			answersCorrect[0] = true
 		}
 		if boolStrOrNilToBool(q.CorrectAnswers.AnswerBCorrect) {
-			answers[2].Correct = true
+			answersCorrect[1] = true
 		}
 		if boolStrOrNilToBool(q.CorrectAnswers.AnswerCCorrect) {
-			answers[3].Correct = true
+			answersCorrect[2] = true
 		}
 		if boolStrOrNilToBool(q.CorrectAnswers.AnswerDCorrect) {
-			answers[4].Correct = true
+			answersCorrect[3] = true
 		}
 		if boolStrOrNilToBool(q.CorrectAnswers.AnswerECorrect) {
-			answers[5].Correct = true
+			answersCorrect[4] = true
 		}
 		if boolStrOrNilToBool(q.CorrectAnswers.AnswerFCorrect) {
-			answers[6].Correct = true
+			answersCorrect[5] = true
+		}
+
+		for j := range answers {
+			answers[j].Correct = answersCorrect[j]
 		}
 
 		tags := make([]string, len(q.Tags))

@@ -37,8 +37,8 @@ type PartyData []struct {
 }
 
 const (
-	ansCount   = 6
-	questCount = 10
+	maxAnsCount = 6
+	questCount  = 10
 )
 
 type quizPartyApiClient struct {
