@@ -1,13 +1,14 @@
 package tg_bot
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/config"
-	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/db"
-	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/repository"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
+	"time"
 )
 
 type Updates struct {
@@ -61,64 +62,53 @@ func main() {
 	//log.Printf("Config = %+v\n", cfg)
 	log.Println("Config unmarshalled")
 
-	ctx := context.Background()
+	cl := http.Client{Timeout: 10 * time.Second}
 
-	adp, err := db.New(ctx, cfg.Dsn)
-	if err != nil {
-		log.Fatal(err)
+	var lastUpdateId int
+
+	for {
+		getUrl := fmt.Sprintf("https://api.telegram.org/bot%s/getUpdates?offset=%d", cfg.ApiKeys.Telegram, lastUpdateId+1)
+		r, err := cl.Get(getUrl)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		b, err := ioutil.ReadAll(r.Body)
+
+		updates := Updates{}
+		errj := json.Unmarshal(b, &updates)
+		if errj != nil {
+			log.Fatal(errj)
+		}
+
+		if updates.Ok {
+			for _, u := range updates.Result {
+				upd := Update{}
+
+				upd.ID = u.UpdateID
+				upd.ChatId = u.Message.From.ID
+				upd.Text = u.Message.Text
+				upd.Username = u.Message.From.Username
+				upd.Date = u.Message.Date
+
+				lastUpdateId = upd.ID
+
+				fmt.Printf("Get %+v\n", upd)
+
+				sendUrl := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage?chat_id=%d&text=%s",
+					cfg.ApiKeys.Telegram, upd.ChatId, "I get <"+upd.Text+">")
+				_, errp := cl.Post(sendUrl, "text/plain", nil)
+				if errp != nil {
+					fmt.Printf("Error = %v\n", errp)
+				} else {
+					fmt.Printf("I send smth\n")
+				}
+			}
+		} else {
+			fmt.Printf("Get nothing")
+		}
+		_ = r.Body.Close()
+		time.Sleep(1000 * time.Millisecond)
 	}
 
-	r := repository.New(adp)
-
-	fmt.Printf("%v\n", r)
-
 }
-
-//cl := http.Client{Timeout: 10 * time.Second}
-//
-//var lastUpdateId int
-//
-//for {
-//	getUrl := fmt.Sprintf("https://api.telegram.org/bot%s/getUpdates?offset=%d", cfg.ApiKeys.Telegram, lastUpdateId+1)
-//	r, err := cl.Get(getUrl)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//
-//	b, err := ioutil.ReadAll(r.Body)
-//
-//	updates := Updates{}
-//	errj := json.Unmarshal(b, &updates)
-//	if errj != nil {
-//		log.Fatal(errj)
-//	}
-//
-//	if updates.Ok {
-//		for _, u := range updates.Result {
-//			upd := Update{}
-//
-//			upd.ID = u.UpdateID
-//			upd.ChatId = u.Message.From.ID
-//			upd.Text = u.Message.Text
-//			upd.Username = u.Message.From.Username
-//			upd.Date = u.Message.Date
-//
-//			lastUpdateId = upd.ID
-//
-//			fmt.Printf("Get %+v\n", upd)
-//
-//			sendUrl := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage?chat_id=%d&text=%s",
-//				cfg.ApiKeys.Telegram, upd.ChatId, "I get <"+upd.Text+">")
-//			_, errp := cl.Post(sendUrl, "text/plain", nil)
-//			if errp != nil {
-//				fmt.Printf("Error = %v\n", errp)
-//			} else {
-//				fmt.Printf("I send smth\n")
-//			}
-//		}
-//	} else {
-//		fmt.Printf("Get nothing")
-//	}
-//	_ = r.Body.Close()
-//	time.Sleep(1000 * time.Millisecond)
-//}

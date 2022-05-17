@@ -17,25 +17,6 @@ message QuizList {
   repeated Quiz QList = 1;
 }
 
-
-message Question {
-  int64 ID = 1;
-  string Title = 2;
-  repeated string AnswerOptions = 3;
-}
-
-message QuestionOrNil {
-  bool ok = 1;
-  optional Question question = 2;
-}
-
-message SendAnswerRequest {
-  int64 UserID = 1;
-  int64 QuestionID = 2;
-  repeated int64 RightOptionNumbers = 3;
-}
-
-
 message PartyResults {
   int64 PointCount = 1;
   int64 PenaltyTime = 2;
@@ -56,10 +37,6 @@ message User {
   string Name = 1;
 }
 
-message QuizPartyID {
-  int64 ID = 1;
-}
-
 message UserID {
   int64 ID = 1;
 }
@@ -68,10 +45,14 @@ message QuizID {
   int64 ID = 1;
 }
 
+message Question {
+  string Title = 1;
+  repeated string AnswerOptions = 2;
+}
 
-message QuizPartyInfo {
-  int64 UserID = 1;
-  int64 QuizPartyID = 2;
+message QuizParty {
+  int64 QuizPartyID = 1;
+  repeated Question Questions = 2;
 }
 
 message QuizUserInfo {
@@ -79,14 +60,21 @@ message QuizUserInfo {
   int64 QuizID = 2;
 }
 
+message QuestionRightAnswers {
+  repeated int32 RightAnswerNumbers = 1;
+}
+
+message AnswersPack {
+  int64 QuizPartyID = 1;
+  repeated QuestionRightAnswers Answers = 2;
+}
+
 
 service QuizService {
   rpc AddUser(User) returns(UserID) {}
   rpc GetQuizList(google.protobuf.Empty) returns (QuizList) {}
-  rpc CreateQuizParty(QuizUserInfo) returns (QuizPartyID) {}
-  rpc GetNextQuestion(QuizPartyInfo) returns (QuestionOrNil) {}
-  rpc SendAnswer(SendAnswerRequest) returns (google.protobuf.Empty) {}
-  rpc GetQuizPartyTop(QuizPartyInfo) returns (SingleTop) {}
+  rpc StartQuizParty(QuizUserInfo) returns (QuizParty) {}
+  rpc SendAnswers(AnswersPack) returns (SingleTop) {}
   rpc GetQuizTop(QuizUserInfo) returns (SingleTop) {}
   rpc GetGlobalQuizTop(QuizID) returns (GlobalTop) {}
 }

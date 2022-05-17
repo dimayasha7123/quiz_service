@@ -10,15 +10,24 @@ type Quiz struct {
 	Name string
 }
 
-type Participation struct {
+type Party struct {
 	ID            int64
 	UserAccountID int64
 	QuizID        int64
+	Completed     bool
+	Points        int32
+	Questions     []Question
 }
 
-type ResponseReport struct {
-	ID              int64
-	ParticipationID int64
-	Correct         bool
-	PenaltyTime     int
+type Question struct {
+	ID      int64
+	Title   string
+	Tags    []string
+	Answers []Answer
+}
+
+type Answer struct {
+	ID      int64
+	Title   string
+	Correct bool
 }

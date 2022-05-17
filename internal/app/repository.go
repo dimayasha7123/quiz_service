@@ -8,5 +8,5 @@ import (
 type Repository interface {
 	AddUser(context.Context, string) (int64, error)
 	GetQuizList(context.Context) ([]models.Quiz, error)
-	AddParticipation(context.Context, models.Participation) (int64, error)
+	AddParty(context.Context, models.Party) (int64, error)
 }
