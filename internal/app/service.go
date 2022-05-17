@@ -5,10 +5,11 @@ import (
 )
 
 type qserver struct {
-	repo Repository
+	repo     Repository
+	qPartyCl QuizPartyApiClient
 	pb.UnimplementedQuizServiceServer
 }
 
-func New(repo Repository) *qserver {
-	return &qserver{repo: repo}
+func New(repo Repository, qPartyClient QuizPartyApiClient) *qserver {
+	return &qserver{repo: repo, qPartyCl: qPartyClient}
 }
