@@ -24,9 +24,9 @@ create table answer
 
 create table partyQuestion
 (
-    id          bigserial primary key,
     question_id bigint references question,
-    party_id    bigint references question
+    party_id    bigint references question,
+    primary key (question_id, party_id)
 );
 -- +goose StatementEnd
 

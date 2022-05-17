@@ -47,7 +47,7 @@ func (q *qserver) StartQuizParty(ctx context.Context, req *pb.QuizUserInfo) (*pb
 
 	party.Questions = apiParty.Questions
 
-	countAddedQuestions, err := q.repo.AddQuestionsIfNot(ctx, party.Questions)
+	countAddedQuestions, err := q.repo.AddQuestionsIfNot(ctx, party.Questions, party.QuizID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "error when add questions")
 	}
