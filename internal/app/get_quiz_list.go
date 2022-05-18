@@ -21,7 +21,7 @@ func (q *qserver) GetQuizList(ctx context.Context, req *emptypb.Empty) (*pb.Quiz
 	for i, qz := range quizes {
 		qList[i] = &pb.Quiz{
 			ID:   qz.ID,
-			Name: qz.Name,
+			Name: qz.Title,
 		}
 	}
 

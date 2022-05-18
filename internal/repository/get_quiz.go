@@ -17,5 +17,5 @@ func (r *repository) GetQuiz(ctx context.Context, ID int64) (models.Quiz, error)
 		return models.Quiz{ID: -1}, err
 	}
 
-	return models.Quiz{ID: ID, Name: title}, nil
+	return models.Quiz{ID: ID, Title: title}, nil
 }

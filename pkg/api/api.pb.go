@@ -27,7 +27,7 @@ type Quiz struct {
 	unknownFields protoimpl.UnknownFields
 
 	ID   int64  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	Name string `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=Title,proto3" json:"Title,omitempty"`
 }
 
 func (x *Quiz) Reset() {
@@ -293,7 +293,7 @@ type User struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name string `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=Title,proto3" json:"Title,omitempty"`
 }
 
 func (x *User) Reset() {

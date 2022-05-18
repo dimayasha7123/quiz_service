@@ -7,19 +7,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
+	"time"
 )
 
 func (q *qserver) StartQuizParty(ctx context.Context, req *pb.QuizUserInfo) (*pb.QuizParty, error) {
-
-	// + создаем Party с указанными QuizID и UserAccountID
-	// + получаем вопросы по API с использованием QuizTitle по QuizID
-	// + пытаемся добавить пак вопросов в БД, чтобы иметь их у себя
-	// идем по всем вопросам:
-	// +   добавляем вопрос в слайс, чтобы отправить пользователю
-	// -   добавляем новую запись в partyQuestion
-
-	// возможно тут все стоит все завернуть в транзакцию, ибо тут 4 обращения к репозу, но пока пусть будет так
-
 	party := models.Party{
 		ID:            0,
 		UserAccountID: req.UserID,
@@ -40,14 +31,17 @@ func (q *qserver) StartQuizParty(ctx context.Context, req *pb.QuizUserInfo) (*pb
 		return nil, status.Error(codes.InvalidArgument, "no such QuizID")
 	}
 
-	apiParty, err := q.qPartyCl.GetParty(quiz.Name)
+	startTime := time.Now()
+	apiParty, err := q.qPartyCl.GetParty(quiz.Title)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "quizApiClient error")
 	}
 
+	log.Println("Time fot api request: ", time.Since(startTime))
+
 	party.Questions = apiParty.Questions
 
-	countAddedQuestions, err := q.repo.AddQuestionsIfNot(ctx, party.Questions, party.QuizID)
+	countAddedQuestions, err := q.repo.AddQuestionsIfNot(ctx, &party.Questions, party.QuizID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "error when add questions")
 	}

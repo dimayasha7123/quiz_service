@@ -6,15 +6,18 @@ import (
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/models"
 )
 
-func (r *repository) AddQuestionsIfNot(ctx context.Context, quests []models.Question, quizID int64) (int32, error) {
+func (r *repository) AddQuestionsIfNot(ctx context.Context, questsPointer *[]models.Question, quizID int64) (int32, error) {
 
 	query := `
-		select id
+		select id, title
 		from question
-		where title != any ($1);
+		where title = any ($1);
 	`
 
-	titles := make([]string, len(quests))
+	qCount := len(*questsPointer)
+	quests := *questsPointer
+
+	titles := make([]string, qCount)
 
 	for i, q := range quests {
 		titles[i] = q.Title
@@ -24,48 +27,50 @@ func (r *repository) AddQuestionsIfNot(ctx context.Context, quests []models.Ques
 		return -1, err
 	}
 
-	notInIDs := make([]int64, 0, len(quests))
+	inQuizes := make([]models.Quiz, 0, qCount)
 
 	for rows.Next() {
 		var id int64
-		err = rows.Scan(&id)
+		var t string
+		err = rows.Scan(&id, &t)
 		if err != nil {
 			return -1, err
 		}
-		notInIDs = append(notInIDs, id)
+		inQuizes = append(inQuizes, models.Quiz{ID: id, Title: t})
 	}
 
-	questsToAdd := make([][]interface{}, 0, len(quests))
-	answersToAdd := make([][]interface{}, 0, len(quests)*4)
+	answersToAdd := make([][]interface{}, 0, qCount*4)
 
-	for _, qst := range quests {
+	added := 0
 
-		notIn := false
-		for _, nID := range notInIDs {
-			if qst.ID == nID {
-				notIn = true
+	for i := range quests {
+
+		next := false
+		for _, inQuiz := range inQuizes {
+			if quests[i].Title == inQuiz.Title {
+				quests[i].ID = inQuiz.ID
+				next = true
 				break
 			}
 		}
-		if notIn {
+		if next {
 			continue
 		}
 
-		questsToAdd = append(questsToAdd, []interface{}{qst.Title, quizID})
-		for _, ans := range qst.Answers {
-			answersToAdd = append(answersToAdd, []interface{}{qst.ID, ans.Title, ans.Correct})
+		questQuery := `
+			insert into question (title, quiz_id) 
+			values ($1, $2) returning id;
+		`
+
+		err = r.pool.QueryRow(ctx, questQuery, quests[i].Title, quizID).Scan(&quests[i].ID)
+		if err != nil {
+			return -1, err
 		}
-	}
+		added++
 
-	// добавлять вопросы по одному, ибо так не вытащить id-шник назад
-
-	added, err := r.pool.CopyFrom(
-		ctx, pgx.Identifier{"question"},
-		[]string{"title", "quiz_id"},
-		pgx.CopyFromRows(questsToAdd),
-	)
-	if err != nil {
-		return -1, err
+		for _, ans := range quests[i].Answers {
+			answersToAdd = append(answersToAdd, []interface{}{quests[i].ID, ans.Title, ans.Correct})
+		}
 	}
 
 	_, err = r.pool.CopyFrom(

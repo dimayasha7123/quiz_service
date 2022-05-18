@@ -16,7 +16,7 @@ func (r *repository) AddAllPartyQuestion(ctx context.Context, quests []models.Qu
 	}
 
 	_, err := r.pool.CopyFrom(
-		ctx, pgx.Identifier{"partyQuestion"},
+		ctx, pgx.Identifier{"party_question"},
 		[]string{"question_id", "party_id"},
 		pgx.CopyFromRows(rows),
 	)

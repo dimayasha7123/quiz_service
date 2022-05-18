@@ -6,8 +6,8 @@ type UserAccount struct {
 }
 
 type Quiz struct {
-	ID   int64
-	Name string
+	ID    int64
+	Title string
 }
 
 type Party struct {

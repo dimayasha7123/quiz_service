@@ -19,7 +19,7 @@ func (r *repository) GetQuizList(ctx context.Context) ([]models.Quiz, error) {
 
 	for rows.Next() {
 		var q models.Quiz
-		err = rows.Scan(&q.ID, &q.Name)
+		err = rows.Scan(&q.ID, &q.Title)
 		if err != nil {
 			return nil, err
 		}
