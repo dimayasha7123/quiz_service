@@ -15,6 +15,6 @@ type Repository interface {
 	GetRightAnswers(ctx context.Context, partyID int64) ([][]int32, error)
 	CompleteParty(ctx context.Context, partyID int64, points int32) (models.SingleTop, error)
 	CheckPartyCompleted(ctx context.Context, partyID int64) (bool, error)
-	GetQuizUserTop(ctx context.Context, quizID, userID int64) (models.SingleTop, error)
+	GetUserQuizTop(ctx context.Context, quizID, userID int64) (models.SingleTop, error)
 	GetQuizTop(ctx context.Context, quizID int64) (models.GlobalTop, error)
 }
