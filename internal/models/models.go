@@ -31,3 +31,18 @@ type Answer struct {
 	Title   string
 	Correct bool
 }
+
+type PartyResults struct {
+	Name   string
+	Points int32
+	Place  int64
+}
+
+type SingleTop struct {
+	UserResults PartyResults
+	GlobalTop   GlobalTop
+}
+
+type GlobalTop struct {
+	Results []PartyResults
+}

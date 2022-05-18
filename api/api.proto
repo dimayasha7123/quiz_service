@@ -18,8 +18,8 @@ message QuizList {
 }
 
 message PartyResults {
-  int64 PointCount = 1;
-  int64 PenaltyTime = 2;
+  string Name = 1;
+  int32 PointCount = 2;
   int64 Place = 3;
 }
 
