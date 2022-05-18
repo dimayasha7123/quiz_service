@@ -10,14 +10,12 @@ func (r *repository) AddAllPartyQuestion(ctx context.Context, quests []models.Qu
 
 	rows := make([][]interface{}, len(quests))
 	for i, q := range quests {
-		rows[i] = make([]interface{}, 2)
-		rows[i][0] = q.ID
-		rows[i][1] = partyID
+		rows[i] = []interface{}{q.ID, partyID, i}
 	}
 
 	_, err := r.pool.CopyFrom(
 		ctx, pgx.Identifier{"party_question"},
-		[]string{"question_id", "party_id"},
+		[]string{"question_id", "party_id", "quest_order_number"},
 		pgx.CopyFromRows(rows),
 	)
 

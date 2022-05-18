@@ -68,14 +68,14 @@ func (r *repository) AddQuestionsIfNot(ctx context.Context, questsPointer *[]mod
 		}
 		added++
 
-		for _, ans := range quests[i].Answers {
-			answersToAdd = append(answersToAdd, []interface{}{quests[i].ID, ans.Title, ans.Correct})
+		for j, ans := range quests[i].Answers {
+			answersToAdd = append(answersToAdd, []interface{}{quests[i].ID, ans.Title, ans.Correct, j})
 		}
 	}
 
 	_, err = r.pool.CopyFrom(
 		ctx, pgx.Identifier{"answer"},
-		[]string{"question_id", "title", "correct"},
+		[]string{"question_id", "title", "correct", "order_number"},
 		pgx.CopyFromRows(answersToAdd),
 	)
 	if err != nil {
