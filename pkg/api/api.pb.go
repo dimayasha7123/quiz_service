@@ -818,13 +818,13 @@ var file_api_api_proto_depIdxs = []int32{
 	8,  // 4: api.QuizParty.Questions:type_name -> api.Question
 	11, // 5: api.AnswersPack.Answers:type_name -> api.QuestionRightAnswers
 	5,  // 6: api.QuizService.AddUser:input_type -> api.User
-	13, // 7: api.QuizService.GetParty:input_type -> google.protobuf.Empty
+	13, // 7: api.QuizService.GetQuizList:input_type -> google.protobuf.Empty
 	10, // 8: api.QuizService.StartQuizParty:input_type -> api.QuizUserInfo
 	12, // 9: api.QuizService.SendAnswers:input_type -> api.AnswersPack
 	10, // 10: api.QuizService.GetQuizTop:input_type -> api.QuizUserInfo
 	7,  // 11: api.QuizService.GetGlobalQuizTop:input_type -> api.QuizID
 	6,  // 12: api.QuizService.AddUser:output_type -> api.UserID
-	1,  // 13: api.QuizService.GetParty:output_type -> api.QuizList
+	1,  // 13: api.QuizService.GetQuizList:output_type -> api.QuizList
 	9,  // 14: api.QuizService.StartQuizParty:output_type -> api.QuizParty
 	3,  // 15: api.QuizService.SendAnswers:output_type -> api.SingleTop
 	3,  // 16: api.QuizService.GetQuizTop:output_type -> api.SingleTop

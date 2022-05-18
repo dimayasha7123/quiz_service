@@ -6,6 +6,7 @@ import (
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/app"
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/db"
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/mw"
+	quizApi "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/quiz_party_api_client"
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/repository"
 	pb "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api"
 	"google.golang.org/grpc"
@@ -40,7 +41,7 @@ func main() {
 
 	log.Println("Get db adapter")
 
-	newServer := app.New(repository.New(adp))
+	newServer := app.New(repository.New(adp), quizApi.New(cfg.ApiKeys.Quiz))
 	lis, err := net.Listen("tcp", "localhost:8080")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

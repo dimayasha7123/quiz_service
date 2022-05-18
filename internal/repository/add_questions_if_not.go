@@ -11,7 +11,7 @@ func (r *repository) AddQuestionsIfNot(ctx context.Context, quests []models.Ques
 	query := `
 		select id
 		from question
-		where title != ($1);
+		where title != any ($1);
 	`
 
 	titles := make([]string, len(quests))
@@ -19,7 +19,6 @@ func (r *repository) AddQuestionsIfNot(ctx context.Context, quests []models.Ques
 	for i, q := range quests {
 		titles[i] = q.Title
 	}
-
 	rows, err := r.pool.Query(ctx, query, titles)
 	if err != nil {
 		return -1, err
@@ -57,6 +56,8 @@ func (r *repository) AddQuestionsIfNot(ctx context.Context, quests []models.Ques
 			answersToAdd = append(answersToAdd, []interface{}{qst.ID, ans.Title, ans.Correct})
 		}
 	}
+
+	// добавлять вопросы по одному, ибо так не вытащить id-шник назад
 
 	added, err := r.pool.CopyFrom(
 		ctx, pgx.Identifier{"question"},

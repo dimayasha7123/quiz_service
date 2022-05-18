@@ -7,7 +7,7 @@ import (
 
 func (r *repository) GetQuiz(ctx context.Context, ID int64) (models.Quiz, error) {
 	query := `
-		select id
+		select title
 		from quiz
 		where id = $1;
 	`

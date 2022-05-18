@@ -50,7 +50,7 @@ func (c *quizServiceClient) AddUser(ctx context.Context, in *User, opts ...grpc.
 
 func (c *quizServiceClient) GetQuizList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*QuizList, error) {
 	out := new(QuizList)
-	err := c.cc.Invoke(ctx, "/api.QuizService/GetParty", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.QuizService/GetQuizList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (UnimplementedQuizServiceServer) AddUser(context.Context, *User) (*UserID, 
 	return nil, status.Errorf(codes.Unimplemented, "method AddUser not implemented")
 }
 func (UnimplementedQuizServiceServer) GetQuizList(context.Context, *emptypb.Empty) (*QuizList, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetParty not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method GetQuizList not implemented")
 }
 func (UnimplementedQuizServiceServer) StartQuizParty(context.Context, *QuizUserInfo) (*QuizParty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartQuizParty not implemented")
@@ -169,7 +169,7 @@ func _QuizService_GetQuizList_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.QuizService/GetParty",
+		FullMethod: "/api.QuizService/GetQuizList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QuizServiceServer).GetQuizList(ctx, req.(*emptypb.Empty))
@@ -261,7 +261,7 @@ var QuizService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _QuizService_AddUser_Handler,
 		},
 		{
-			MethodName: "GetParty",
+			MethodName: "GetQuizList",
 			Handler:    _QuizService_GetQuizList_Handler,
 		},
 		{
