@@ -1,0 +1,381 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "api.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "QuizService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/addanswers": {
+      "post": {
+        "operationId": "QuizService_SendAnswers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiSingleTop"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiAnswersPack"
+            }
+          }
+        ],
+        "tags": [
+          "QuizService"
+        ]
+      }
+    },
+    "/api/addparty": {
+      "post": {
+        "operationId": "QuizService_StartQuizParty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiQuizParty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiQuizUserInfo"
+            }
+          }
+        ],
+        "tags": [
+          "QuizService"
+        ]
+      }
+    },
+    "/api/adduser/{Name}": {
+      "post": {
+        "operationId": "QuizService_AddUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUserID"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "tags": [
+          "QuizService"
+        ]
+      }
+    },
+    "/api/getglobalquiztop/{ID}": {
+      "get": {
+        "operationId": "QuizService_GetGlobalQuizTop",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGlobalTop"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "QuizService"
+        ]
+      }
+    },
+    "/api/getquizlist": {
+      "get": {
+        "operationId": "QuizService_GetQuizList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiQuizList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "QuizService"
+        ]
+      }
+    },
+    "/api/getquiztop/{UserID}/{QuizID}": {
+      "get": {
+        "operationId": "QuizService_GetQuizTop",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiSingleTop"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "UserID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "QuizID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "QuizService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiAnswersPack": {
+      "type": "object",
+      "properties": {
+        "QuizPartyID": {
+          "type": "string",
+          "format": "int64"
+        },
+        "Answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiQuestionRightAnswers"
+          }
+        }
+      }
+    },
+    "apiGlobalTop": {
+      "type": "object",
+      "properties": {
+        "Results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiPartyResults"
+          }
+        }
+      }
+    },
+    "apiPartyResults": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "PointCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Place": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "apiQuestion": {
+      "type": "object",
+      "properties": {
+        "Title": {
+          "type": "string"
+        },
+        "AnswerOptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "apiQuestionRightAnswers": {
+      "type": "object",
+      "properties": {
+        "RightAnswerNumbers": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "apiQuiz": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "int64"
+        },
+        "Name": {
+          "type": "string"
+        }
+      }
+    },
+    "apiQuizList": {
+      "type": "object",
+      "properties": {
+        "QList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiQuiz"
+          }
+        }
+      }
+    },
+    "apiQuizParty": {
+      "type": "object",
+      "properties": {
+        "QuizPartyID": {
+          "type": "string",
+          "format": "int64"
+        },
+        "Questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiQuestion"
+          }
+        }
+      }
+    },
+    "apiQuizUserInfo": {
+      "type": "object",
+      "properties": {
+        "UserID": {
+          "type": "string",
+          "format": "int64"
+        },
+        "QuizID": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "apiSingleTop": {
+      "type": "object",
+      "properties": {
+        "UserResults": {
+          "$ref": "#/definitions/apiPartyResults"
+        },
+        "QuizTop": {
+          "$ref": "#/definitions/apiGlobalTop"
+        }
+      }
+    },
+    "apiUserID": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

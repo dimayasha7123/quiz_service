@@ -5,6 +5,7 @@ option go_package = "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/api
 package api;
 
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 
 
@@ -71,10 +72,37 @@ message AnswersPack {
 
 
 service QuizService {
-  rpc AddUser(User) returns(UserID) {}
-  rpc GetQuizList(google.protobuf.Empty) returns (QuizList) {}
-  rpc StartQuizParty(QuizUserInfo) returns (QuizParty) {}
-  rpc SendAnswers(AnswersPack) returns (SingleTop) {}
-  rpc GetQuizTop(QuizUserInfo) returns (SingleTop) {}
-  rpc GetGlobalQuizTop(QuizID) returns (GlobalTop) {}
+  rpc AddUser(User) returns(UserID) {
+    option (google.api.http) = {
+      post: "/api/adduser/{Name}"
+      body: "*"
+    };
+  }
+  rpc GetQuizList(google.protobuf.Empty) returns (QuizList) {
+    option (google.api.http) = {
+      get: "/api/getquizlist"
+    };
+  }
+  rpc StartQuizParty(QuizUserInfo) returns (QuizParty) {
+    option (google.api.http) = {
+      post: "/api/addparty"
+      body: "*"
+    };
+  }
+  rpc SendAnswers(AnswersPack) returns (SingleTop) {
+    option (google.api.http) = {
+      post: "/api/addanswers"
+      body: "*"
+    };
+  }
+  rpc GetQuizTop(QuizUserInfo) returns (SingleTop) {
+    option (google.api.http) = {
+      get: "/api/getquiztop/{UserID}/{QuizID}"
+    };
+  }
+  rpc GetGlobalQuizTop(QuizID) returns (GlobalTop) {
+    option (google.api.http) = {
+      get: "/api/getglobalquiztop/{ID}"
+    };
+  }
 }

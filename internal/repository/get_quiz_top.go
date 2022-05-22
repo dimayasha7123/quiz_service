@@ -16,8 +16,6 @@ func (r *repository) GetQuizTop(ctx context.Context, quizID int64) (models.Globa
 	order by mp desc
 	limit 3;
 	`
-	// TODO вынести количество записей в топе в конфиг
-
 	rows, err := r.pool.Query(ctx, globalTopQuery, quizID)
 	if err != nil {
 		return models.GlobalTop{}, err

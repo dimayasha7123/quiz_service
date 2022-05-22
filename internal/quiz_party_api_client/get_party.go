@@ -15,7 +15,7 @@ func boolStrOrNilToBool(s string) bool {
 	return false
 }
 
-func (qac *quizPartyApiClient) GetParty(tag string) (*models.Party, error) {
+func (qac *QuizPartyApiClient) GetParty(tag string) (*models.Party, error) {
 	getUrl := fmt.Sprintf("https://quizapi.io/api/v1/questions?apiKey=%s&tags=%s&limit=%d", qac.apiKey, tag, questCount)
 	resp, err := qac.cl.Get(getUrl)
 	if err != nil {

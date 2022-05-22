@@ -41,13 +41,13 @@ const (
 	questCount  = 10
 )
 
-type quizPartyApiClient struct {
+type QuizPartyApiClient struct {
 	apiKey string
 	cl     http.Client
 }
 
-func New(apiKey string) *quizPartyApiClient {
-	return &quizPartyApiClient{
+func New(apiKey string) *QuizPartyApiClient {
+	return &QuizPartyApiClient{
 		cl:     http.Client{Timeout: 10 * time.Second},
 		apiKey: apiKey,
 	}

@@ -9,8 +9,6 @@ import (
 )
 
 func (q *qserver) AddUser(ctx context.Context, req *pb.User) (*pb.UserID, error) {
-	// если есть юзер с таким именем, то возвращаем -1
-	// иначе возвращаем id только что добавленного юзера
 
 	userID, err := q.repo.AddUser(ctx, req.Name)
 

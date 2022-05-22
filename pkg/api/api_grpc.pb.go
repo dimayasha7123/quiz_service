@@ -2,16 +2,16 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.20.1
-// source: api/api.proto
+// source: api.proto
 
 package api
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type QuizServiceClient interface {
 	AddUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*UserID, error)
-	GetQuizList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*QuizList, error)
+	GetQuizList(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*QuizList, error)
 	StartQuizParty(ctx context.Context, in *QuizUserInfo, opts ...grpc.CallOption) (*QuizParty, error)
 	SendAnswers(ctx context.Context, in *AnswersPack, opts ...grpc.CallOption) (*SingleTop, error)
 	GetQuizTop(ctx context.Context, in *QuizUserInfo, opts ...grpc.CallOption) (*SingleTop, error)
@@ -48,7 +48,7 @@ func (c *quizServiceClient) AddUser(ctx context.Context, in *User, opts ...grpc.
 	return out, nil
 }
 
-func (c *quizServiceClient) GetQuizList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*QuizList, error) {
+func (c *quizServiceClient) GetQuizList(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*QuizList, error) {
 	out := new(QuizList)
 	err := c.cc.Invoke(ctx, "/api.QuizService/GetQuizList", in, out, opts...)
 	if err != nil {
@@ -98,7 +98,7 @@ func (c *quizServiceClient) GetGlobalQuizTop(ctx context.Context, in *QuizID, op
 // for forward compatibility
 type QuizServiceServer interface {
 	AddUser(context.Context, *User) (*UserID, error)
-	GetQuizList(context.Context, *emptypb.Empty) (*QuizList, error)
+	GetQuizList(context.Context, *empty.Empty) (*QuizList, error)
 	StartQuizParty(context.Context, *QuizUserInfo) (*QuizParty, error)
 	SendAnswers(context.Context, *AnswersPack) (*SingleTop, error)
 	GetQuizTop(context.Context, *QuizUserInfo) (*SingleTop, error)
@@ -113,7 +113,7 @@ type UnimplementedQuizServiceServer struct {
 func (UnimplementedQuizServiceServer) AddUser(context.Context, *User) (*UserID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddUser not implemented")
 }
-func (UnimplementedQuizServiceServer) GetQuizList(context.Context, *emptypb.Empty) (*QuizList, error) {
+func (UnimplementedQuizServiceServer) GetQuizList(context.Context, *empty.Empty) (*QuizList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetQuizList not implemented")
 }
 func (UnimplementedQuizServiceServer) StartQuizParty(context.Context, *QuizUserInfo) (*QuizParty, error) {
@@ -160,7 +160,7 @@ func _QuizService_AddUser_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _QuizService_GetQuizList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func _QuizService_GetQuizList_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/api.QuizService/GetQuizList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QuizServiceServer).GetQuizList(ctx, req.(*emptypb.Empty))
+		return srv.(QuizServiceServer).GetQuizList(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -282,5 +282,5 @@ var QuizService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/api.proto",
+	Metadata: "api.proto",
 }

@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/config"
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/app"
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/db"
@@ -10,14 +12,36 @@ import (
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/repository"
 	pb "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net"
+	"net/http"
 	"os"
 )
 
 const (
 	configPath = "./config/config.yaml"
 )
+
+func runRest(socket config.Socket) {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err := pb.RegisterQuizServiceHandlerFromEndpoint(
+		ctx,
+		mux,
+		fmt.Sprintf("%s:%s", socket.Host, socket.GrpcPort),
+		opts,
+	)
+	if err != nil {
+		panic(err)
+	}
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", socket.HTTPPort), mux); err != nil {
+		panic(err)
+	}
+}
 
 func main() {
 	b, err := os.ReadFile(configPath)
@@ -30,7 +54,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//log.Printf("Config = %+v\n", cfg)
 	log.Println("Config unmarshalled")
 	ctx := context.Background()
 
@@ -41,13 +64,13 @@ func main() {
 
 	log.Println("Get db adapter")
 
-	qserver := app.New(repository.New(adp), quizApi.New(cfg.ApiKeys.Quiz))
-	lis, err := net.Listen("tcp", "localhost:8080")
+	qserver := app.New(repository.New(adp), quizApi.New(cfg.QuizAPIKey))
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	log.Println("Listening TCP at localhost:8080")
+	log.Printf("Listening TCP at %s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort)
 
 	var opts []grpc.ServerOption
 	opts = []grpc.ServerOption{
@@ -64,6 +87,9 @@ func main() {
 
 	log.Println("Register grpc server")
 	log.Println("Server running!")
+
+	go runRest(cfg.Socket)
+	log.Println("HTTP-proxy server running!")
 
 	err = grpcServer.Serve(lis)
 	if err != nil {
