@@ -6,7 +6,22 @@ import (
 )
 
 func (r *repository) GetUserQuizTop(ctx context.Context, quizID, userID int64) (models.SingleTop, error) {
-	userResultQuery := `
+
+	countFinishedQuery := `
+	select count(*) from party where user_account_id = $2 and quiz_id = $1 and completed;
+	`
+
+	var countFinished int64
+	err := r.pool.QueryRow(ctx, countFinishedQuery, quizID, userID).Scan(&countFinished)
+	if err != nil {
+		return models.SingleTop{}, err
+	}
+
+	singleTop := models.SingleTop{}
+
+	if countFinished != 0 {
+
+		userResultQuery := `
 	select place, name, mp
 		from (
 		select ROW_NUMBER() over () as place, id, q.name, q.mp
@@ -20,15 +35,14 @@ func (r *repository) GetUserQuizTop(ctx context.Context, quizID, userID int64) (
 				order by mp desc) as q) as qq
 				where qq.id = $2;
 	`
-
-	singleTop := models.SingleTop{}
-	err := r.pool.QueryRow(ctx, userResultQuery, quizID, userID).Scan(
-		&singleTop.UserResults.Place,
-		&singleTop.UserResults.Name,
-		&singleTop.UserResults.Points,
-	)
-	if err != nil {
-		return models.SingleTop{}, err
+		err := r.pool.QueryRow(ctx, userResultQuery, quizID, userID).Scan(
+			&singleTop.UserResults.Place,
+			&singleTop.UserResults.Name,
+			&singleTop.UserResults.Points,
+		)
+		if err != nil {
+			return models.SingleTop{}, err
+		}
 	}
 
 	gTop, err := r.GetQuizTop(ctx, quizID)

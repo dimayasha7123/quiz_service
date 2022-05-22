@@ -20,14 +20,14 @@ const (
 )
 
 func main() {
-	b, errr := os.ReadFile(configPath)
-	if errr != nil {
-		log.Fatal(errr)
+	b, err := os.ReadFile(configPath)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	cfg, errc := config.ParseConfig(b)
-	if errc != nil {
-		log.Fatal(errc)
+	cfg, err := config.ParseConfig(b)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	//log.Printf("Config = %+v\n", cfg)
@@ -41,7 +41,7 @@ func main() {
 
 	log.Println("Get db adapter")
 
-	newServer := app.New(repository.New(adp), quizApi.New(cfg.ApiKeys.Quiz))
+	qserver := app.New(repository.New(adp), quizApi.New(cfg.ApiKeys.Quiz))
 	lis, err := net.Listen("tcp", "localhost:8080")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -60,10 +60,9 @@ func main() {
 
 	log.Println("Create grpc server")
 
-	pb.RegisterQuizServiceServer(grpcServer, newServer)
+	pb.RegisterQuizServiceServer(grpcServer, qserver)
 
 	log.Println("Register grpc server")
-
 	log.Println("Server running!")
 
 	err = grpcServer.Serve(lis)

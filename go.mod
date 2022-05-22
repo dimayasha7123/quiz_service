@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/jackc/pgx/v4 v4.16.1
+	gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.46.2
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -11,7 +12,6 @@ require (
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.12.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -30,3 +30,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
+
+replace gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api => ./pkg/api
