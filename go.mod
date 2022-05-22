@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/gojuno/minimock/v3 v3.0.10
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/stretchr/testify v1.7.0
 	gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api v0.0.0-00010101000000-000000000000
@@ -15,7 +16,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.12.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
