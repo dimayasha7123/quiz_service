@@ -11,6 +11,7 @@ import (
 	quizApi "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/quiz_party_api_client"
 	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/repository"
 	pb "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api"
+	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
@@ -36,63 +37,71 @@ func runRest(socket config.Socket) {
 		opts,
 	)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", socket.HTTPPort), mux); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
 func main() {
+	utils.InitializeLogger()
+	defer utils.SyncLogger()
+
 	b, err := os.ReadFile(configPath)
 	if err != nil {
-		log.Fatal(err)
+		utils.Logger.Fatalf("Can't read config file: %v", err)
 	}
 
 	cfg, err := config.ParseConfig(b)
 	if err != nil {
-		log.Fatal(err)
+		utils.Logger.Fatalf("Can't parse config: %v", err)
 	}
 
-	log.Println("Config unmarshalled")
+	utils.Logger.Info("Config unmarshalled")
 	ctx := context.Background()
 
 	adp, err := db.New(ctx, cfg.Dsn)
 	if err != nil {
-		log.Fatal(err)
+		utils.Logger.Fatalf("Can't create DB adapter: %v", err)
 	}
 
-	log.Println("Get db adapter")
+	utils.Logger.Info("Get DB adapter")
 
 	qserver := app.New(repository.New(adp), quizApi.New(cfg.QuizAPIKey))
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		utils.Logger.Fatalw("Failed to listen TCP",
+			"err", err,
+			"host", cfg.Socket.Host,
+			"gRPCport", cfg.Socket.GrpcPort,
+		)
 	}
-
-	log.Printf("Listening TCP at %s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort)
+	utils.Logger.Infof("Listening TCP at %s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort)
 
 	var opts []grpc.ServerOption
 	opts = []grpc.ServerOption{
 		grpc.UnaryInterceptor(mw.LogInterceptor),
 	}
-
-	log.Println("Create server options")
+	utils.Logger.Infof("Create server options")
 
 	grpcServer := grpc.NewServer(opts...)
-
-	log.Println("Create grpc server")
+	utils.Logger.Info("Create gRPC server")
 
 	pb.RegisterQuizServiceServer(grpcServer, qserver)
-
-	log.Println("Register grpc server")
-	log.Println("Server running!")
+	utils.Logger.Info("Register gRPC server")
 
 	go runRest(cfg.Socket)
-	log.Println("HTTP-proxy server running!")
+	utils.Logger.Info("HTTP-proxy server running!")
 
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		panic(err)
+	go func() {
+		err = grpcServer.Serve(lis)
+		if err != nil {
+			utils.Logger.Fatalf("Error while server working: %v", err)
+		}
+	}()
+	utils.Logger.Info("Server running!")
+
+	for true {
 	}
 }
