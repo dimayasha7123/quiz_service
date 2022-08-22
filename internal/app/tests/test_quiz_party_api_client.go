@@ -1,7 +1,7 @@
 package tests
 
 import (
-	quizApi "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/quiz_party_api_client"
+	quizApi "github.com/dimayasha7123/quiz_service/internal/quiz_party_api_client"
 )
 
 func NewTestApiClient() *quizApi.QuizPartyApiClient {

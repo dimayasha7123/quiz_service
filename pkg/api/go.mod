@@ -1,4 +1,4 @@
-module gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123
+module github.com/dimayasha7123/quiz_service
 
 go 1.18
 

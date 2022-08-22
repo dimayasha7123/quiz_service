@@ -1,4 +1,4 @@
-module gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123
+module github.com/dimayasha7123/quiz_service
 
 go 1.18
 
@@ -7,7 +7,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/stretchr/testify v1.7.0
-	gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api v0.0.0-00010101000000-000000000000
+	github.com/dimayasha7123/quiz_service/pkg/api v0.0.0-00010101000000-000000000000
 	go.uber.org/zap v1.13.0
 	google.golang.org/grpc v1.46.2
 	google.golang.org/protobuf v1.28.0
@@ -38,4 +38,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-replace gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api => ./pkg/api
+replace github.com/dimayasha7123/quiz_service/pkg/api => ./pkg/api

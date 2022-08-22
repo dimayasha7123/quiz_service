@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/models"
+	"github.com/dimayasha7123/quiz_service/internal/models"
 )
 
 func (r *repository) CompleteParty(ctx context.Context, partyID int64, points int32) (models.SingleTop, error) {

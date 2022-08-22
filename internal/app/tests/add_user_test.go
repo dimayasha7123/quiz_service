@@ -3,10 +3,10 @@ package tests
 import (
 	"context"
 	"fmt"
+	"github.com/dimayasha7123/quiz_service/internal/app"
+	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/assert"
-	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/app"
-	pb "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"testing"

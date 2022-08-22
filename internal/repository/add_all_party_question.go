@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
+	"github.com/dimayasha7123/quiz_service/internal/models"
 	"github.com/jackc/pgx/v4"
-	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/models"
 )
 
 func (r *repository) AddAllPartyQuestion(ctx context.Context, quests []models.Question, partyID int64) error {

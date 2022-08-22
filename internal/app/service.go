@@ -1,7 +1,7 @@
 package app
 
 import (
-	pb "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api"
+	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 )
 
 type qserver struct {

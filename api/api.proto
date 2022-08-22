@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/api";
+option go_package = "github.com/dimayasha7123/quiz_service/api";
 
 package api;
 

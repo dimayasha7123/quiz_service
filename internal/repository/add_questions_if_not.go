@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
+	"github.com/dimayasha7123/quiz_service/internal/models"
 	"github.com/jackc/pgx/v4"
-	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/models"
 )
 
 func (r *repository) AddQuestionsIfNot(ctx context.Context, questsPointer *[]models.Question, quizID int64) (int32, error) {

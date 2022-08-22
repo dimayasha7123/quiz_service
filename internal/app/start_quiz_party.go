@@ -2,8 +2,8 @@ package app
 
 import (
 	"context"
-	"gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/internal/models"
-	pb "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api"
+	"github.com/dimayasha7123/quiz_service/internal/models"
+	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"

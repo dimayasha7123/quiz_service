@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	pb "gitlab.ozon.dev/dimayasha7123/homework-2-dimayasha-7123/pkg/api"
+	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
