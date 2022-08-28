@@ -3,12 +3,12 @@ module github.com/dimayasha7123/quiz_service
 go 1.18
 
 require (
+	github.com/dimayasha7123/quiz_service/pkg/api v0.0.0-00010101000000-000000000000
 	github.com/gojuno/minimock/v3 v3.0.10
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.1
 	github.com/jackc/pgx/v4 v4.16.1
-	github.com/stretchr/testify v1.7.0
-	github.com/dimayasha7123/quiz_service/pkg/api v0.0.0-00010101000000-000000000000
-	go.uber.org/zap v1.13.0
+	github.com/stretchr/testify v1.8.0
+	go.uber.org/zap v1.23.0
 	google.golang.org/grpc v1.46.2
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -26,8 +26,8 @@ require (
 	github.com/jackc/pgtype v1.11.0 // indirect
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	go.uber.org/atomic v1.6.0 // indirect
-	go.uber.org/multierr v1.5.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
@@ -35,7 +35,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.3 // indirect
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace github.com/dimayasha7123/quiz_service/pkg/api => ./pkg/api
