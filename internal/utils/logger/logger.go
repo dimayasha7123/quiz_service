@@ -3,8 +3,6 @@ package logger
 var Log Logger
 
 type Logger interface {
-	
-
 	Debug(args ...interface{})
 	Debugf(template string, args ...interface{})
 	Debugln(args ...interface{})

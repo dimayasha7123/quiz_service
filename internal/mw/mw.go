@@ -3,7 +3,7 @@ package mw
 import (
 	"context"
 
-	"github.com/dimayasha7123/quiz_service/utils/logger"
+	"github.com/dimayasha7123/quiz_service/internal/utils/logger"
 	"google.golang.org/grpc"
 )
 
@@ -16,14 +16,12 @@ func LogInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServer
 			"request", req,
 			"error", err,
 		)
-		// log.Println(info.FullMethod, req, err)
 	} else {
 		logger.Log.Infow(
 			"log interceptor",
 			"full method", info.FullMethod,
 			"request", req,
 		)
-		//log.Println(info.FullMethod, req) //, resp)
 	}
 	return resp, err
 }

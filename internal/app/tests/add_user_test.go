@@ -3,13 +3,14 @@ package tests
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/dimayasha7123/quiz_service/internal/app"
 	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"testing"
 )
 
 func TestAddUser(t *testing.T) {

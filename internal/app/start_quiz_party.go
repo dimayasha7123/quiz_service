@@ -6,7 +6,7 @@ import (
 
 	"github.com/dimayasha7123/quiz_service/internal/models"
 	pb "github.com/dimayasha7123/quiz_service/pkg/api"
-	"github.com/dimayasha7123/quiz_service/utils/logger"
+	"github.com/dimayasha7123/quiz_service/internal/utils/logger"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

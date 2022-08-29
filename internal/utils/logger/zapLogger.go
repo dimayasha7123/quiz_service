@@ -9,7 +9,6 @@ func RegisterLog() error {
 	}
 	defer zLogger.Sync()
 	zSugarlog := zLogger.Sugar()
-	zSugarlog.Info()
 	SetLogger(zSugarlog)
 	return nil
 }

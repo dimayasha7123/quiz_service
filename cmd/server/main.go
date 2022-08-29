@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -14,16 +15,11 @@ import (
 	"github.com/dimayasha7123/quiz_service/internal/mw"
 	quizApi "github.com/dimayasha7123/quiz_service/internal/quiz_party_api_client"
 	"github.com/dimayasha7123/quiz_service/internal/repository"
+	"github.com/dimayasha7123/quiz_service/internal/utils/logger"
 	pb "github.com/dimayasha7123/quiz_service/pkg/api"
-	"github.com/dimayasha7123/quiz_service/utils/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-)
-
-// TODO: fix this shit
-const (
-	configPath = "./config/config.yaml"
 )
 
 func runRest(socket config.Socket) {
@@ -47,7 +43,15 @@ func runRest(socket config.Socket) {
 
 }
 
+// Rem protoc --go_out=pkg --go_opt=paths=source_relative --go-grpc_out=pkg --go-grpc_opt=paths=source_relative api/api.proto
+// Rem protoc --go_out=. --go-grpc_out=. --grpc-gateway_out=. --grpc-gateway_opt generate_unbound_methods=true --openapiv2_out . api.proto
+// protoc -I ./api --go_out ./pkg/api --go_opt paths=source_relative --go-grpc_out ./pkg/api --go-grpc_opt paths=source_relative --grpc-gateway_out ./pkg/api --grpc-gateway_opt paths=source_relative --grpc-gateway_opt generate_unbound_methods=true --openapiv2_out ./pkg/api api/api.proto
+
 //docker run --name testPostgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=quiz_service_db -d postgres
+
+const (
+	defaultConfigPath = "./config/config.yaml"
+)
 
 func main() {
 	err := logger.RegisterLog()
@@ -55,6 +59,14 @@ func main() {
 		log.Fatalf("Can't register logger: %v", err)
 	}
 
+	var configPath string
+	flag.StringVar(&configPath, "config", defaultConfigPath, "path to config")
+
+	flag.Parse()
+	if configPath == "" {
+		logger.Log.Fatal("Config path can't be empty")
+	}
+	
 	b, err := os.ReadFile(configPath)
 	if err != nil {
 		logger.Log.Fatalf("Can't read config file: %v", err)
@@ -111,13 +123,13 @@ func main() {
 }
 
 // что доделать?
-// * добить норм логгирование (подумать как его засунуть в проект, пока тупо глобальная переменная)
-// * переделать тяжелые запросы в базку
-// * переделать конфиг (давать его аргементом мейну)
-// * завернуть в докер
-// * списков квизов вынести в конфиг??? или не конфиг... сложно...
-// *
+// + добить норм логгирование (подумать как его засунуть в проект, пока тупо глобальная переменная)
+// - переделать тяжелые запросы в базку
+// - переделать конфиг (давать его аргементом мейну)
+// - завернуть в докер
+// - списков квизов вынести в конфиг??? или не конфиг... сложно...
+// -
 
 // что хотелось бы иметь?
-// * часть перенести в клик? хотя возможно имеет смысл разбить проект на два сервиса, один из них сохраняет статистику
-// * впихнуть метрики
+// - часть перенести в клик? хотя возможно имеет смысл разбить проект на два сервиса, один из них сохраняет статистику
+// - впихнуть метрики
