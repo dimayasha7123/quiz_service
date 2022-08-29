@@ -1,0 +1,10 @@
+FROM golang:alpine as builder
+RUN mkdir /build 
+ADD . /build/
+WORKDIR /build 
+RUN go build -o main ./cmd/server
+FROM alpine
+COPY --from=builder /build/main /app/
+COPY /config/config.yaml /app/
+WORKDIR /app
+ENTRYPOINT "./main" "--config" "./config.yaml"
