@@ -18,3 +18,6 @@ init_postgres:
 annihilate_postgres:
 	sudo docker container stop testPostgres
 	sudo docker container rm testPostgres
+
+start:
+	go run ./cmd/server/main.go
