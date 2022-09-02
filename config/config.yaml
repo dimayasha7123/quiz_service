@@ -1,6 +1,12 @@
 socket:
   host: "localhost"
-  grpcPort: "8080"
-  httpPort: "8081"
-quizApiKey: "cCP7GHWCoe2d4VBysvmaAT1x1hToB54mm1rdEiYK"
-dsn: "host=localhost port=5432 user=postgres password=postgres dbname=quiz_service_db sslmode=disable"
+  grpc_port: "8080"
+  http_port: "8081"
+quiz_api_key: "cCP7GHWCoe2d4VBysvmaAT1x1hToB54mm1rdEiYK"
+postgres: 
+  host: "localhost"
+  port: "5432"
+  user: "postgres"
+  password: "postgres"
+  dbname: "quiz_service_db"
+  sslmode: "disable"

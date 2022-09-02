@@ -18,6 +18,7 @@ import (
 	"github.com/dimayasha7123/quiz_service/internal/utils/logger"
 	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -51,6 +52,7 @@ func runRest(socket config.Socket) {
 
 const (
 	defaultConfigPath = "./config/config.yaml"
+	defaultEnvPath    = "./.env"
 )
 
 func main() {
@@ -59,6 +61,17 @@ func main() {
 		log.Fatalf("Can't register logger: %v", err)
 	}
 
+	// нужна такая штука, которая пытается получить конфиг из файла .env,
+	// если там мы получили ошибку, то пытаемся прочитать конфиг
+	// на выход мы получим конфиг или ошибку
+
+	// даем приложению путь до конфига и путь до енва
+	// читаем енв и получаем мапу
+	// читаем конфиг и получаем байты
+
+	// даем мапу и байты какой то штуке
+	// она нам дает итоговый конфиг как-то слив эти данные
+
 	var configPath string
 	flag.StringVar(&configPath, "config", defaultConfigPath, "path to config")
 
@@ -66,20 +79,25 @@ func main() {
 	if configPath == "" {
 		logger.Log.Fatal("Config path can't be empty")
 	}
-	
+
 	b, err := os.ReadFile(configPath)
 	if err != nil {
 		logger.Log.Fatalf("Can't read config file: %v", err)
 	}
 
-	cfg, err := config.ParseConfig(b)
+	env, err := godotenv.Read(defaultEnvPath)
+	if err != nil {
+		logger.Log.Fatalf("Can't read env file: %v", err)
+	}
+
+	cfg, err := config.GetConfig(b, env)
 	if err != nil {
 		logger.Log.Fatalf("Can't parse config: %v", err)
 	}
 
 	logger.Log.Info("Config unmarshalled")
-	ctx := context.Background()
 
+	ctx := context.Background()
 	adp, err := db.New(ctx, cfg.Dsn)
 	if err != nil {
 		logger.Log.Fatalf("Can't create DB adapter: %v", err)
