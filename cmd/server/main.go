@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 
 	"github.com/dimayasha7123/quiz_service/config"
 	"github.com/dimayasha7123/quiz_service/internal/app"
@@ -51,8 +50,7 @@ func runRest(socket config.Socket) {
 //docker run --name testPostgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=quiz_service_db -d postgres
 
 const (
-	defaultConfigPath = "./config/config.yaml"
-	defaultEnvPath    = "./.env"
+	defaultEnvPath = "./.env"
 )
 
 func main() {
@@ -61,28 +59,12 @@ func main() {
 		log.Fatalf("Can't register logger: %v", err)
 	}
 
-	// нужна такая штука, которая пытается получить конфиг из файла .env,
-	// если там мы получили ошибку, то пытаемся прочитать конфиг
-	// на выход мы получим конфиг или ошибку
-
-	// даем приложению путь до конфига и путь до енва
-	// читаем енв и получаем мапу
-	// читаем конфиг и получаем байты
-
-	// даем мапу и байты какой то штуке
-	// она нам дает итоговый конфиг как-то слив эти данные
-
-	var configPath string
-	flag.StringVar(&configPath, "config", defaultConfigPath, "path to config")
+	var envPath string
+	flag.StringVar(&envPath, "env", defaultEnvPath, "path to .env")
 
 	flag.Parse()
-	if configPath == "" {
-		logger.Log.Fatal("Config path can't be empty")
-	}
-
-	b, err := os.ReadFile(configPath)
-	if err != nil {
-		logger.Log.Fatalf("Can't read config file: %v", err)
+	if envPath == "" {
+		logger.Log.Fatal("Env path can't be empty")
 	}
 
 	env, err := godotenv.Read(defaultEnvPath)
@@ -90,9 +72,9 @@ func main() {
 		logger.Log.Fatalf("Can't read env file: %v", err)
 	}
 
-	cfg, err := config.GetConfig(b, env)
+	cfg, err := config.GetConfig(env)
 	if err != nil {
-		logger.Log.Fatalf("Can't parse config: %v", err)
+		logger.Log.Fatalf("Can't get config from env: %v", err)
 	}
 
 	logger.Log.Info("Config unmarshalled")

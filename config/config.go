@@ -3,8 +3,6 @@ package config
 import (
 	"fmt"
 	"reflect"
-
-	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -19,83 +17,75 @@ type Socket struct {
 	HTTPPort string
 }
 
-type configFile struct {
-	Socket struct {
-		Host     string `yaml:"host" env:"SOCKET_HOST"`
-		GrpcPort string `yaml:"grpc_port" env:"SOCKET_GRPC_PORT"`
-		HTTPPort string `yaml:"http_port" env:"SOCKET_HTTP_PORT"`
-	} `yaml:"socket"`
-	QuizAPIKey string `yaml:"quiz_api_key" env:"QUIZ_API_KEY"`
-	Postgres   struct {
-		Host     string `yaml:"host" env:"POSTGRES_HOST"`
-		Port     string `yaml:"port" env:"POSTGRES_PORT"`
-		User     string `yaml:"user" env:"POSTGRES_USER"`
-		Password string `yaml:"password" env:"POSTGRES_PASSWORD"`
-		Dbname   string `yaml:"dbname" env:"POSTGRES_DBNAME"`
-		Sslmode  string `yaml:"sslmode" env:"POSTGRES_SSLMODE"`
-	} `yaml:"postgres"`
+type enviroment struct {
+	SocketHost       string `env:"SOCKET_HOST"`
+	SocketGrpcPort   string `env:"SOCKET_GRPC_PORT"`
+	SocketHTTPPort   string `env:"SOCKET_HTTP_PORT"`
+	QuizAPIKey       string `env:"QUIZ_API_KEY"`
+	PostgresHost     string `env:"POSTGRES_HOST"`
+	PostgresPort     string `env:"POSTGRES_PORT"`
+	PostgresUser     string `env:"POSTGRES_USER"`
+	PostgresPassword string `env:"POSTGRES_PASSWORD"`
+	PostgresDBName   string `env:"POSTGRES_DBNAME"`
+	PostgresSslMode  string `env:"POSTGRES_SSLMODE"`
 }
 
-func parseConfigBytes(fileBytes []byte) (*configFile, error) {
-	cf := configFile{}
-	err := yaml.Unmarshal(fileBytes, &cf)
-	if err != nil {
-		return nil, err
-	}
-	return &cf, nil
-}
-
-func mergeEnvAndConfig(env map[string]string, pval *reflect.Value, pt *reflect.Type) error {
-	// нужно пройтись по структуре и посмотреть по тегам, можно ли их вытащить из мапы
-	// не будем городить рекурсию чтобы обойти все вложенные структуры, а пока просто если видим,
-	// что структура содержит структуру, то проходимся по ней. То есть один уровень вложенности
-	val := *pval
-	t := *pt
-	k := t.Kind()
-	fmt.Printf("value: %v\ntype: %v\nkind: %v\n", val, t, k)
-	fmt.Printf("NumField: %v\n", t.NumField())
+func getEnvNameList() []string {
+	val := reflect.Indirect(reflect.ValueOf(enviroment{}))
+	t := val.Type()
+	envNameList := make([]string, t.NumField())
+	fmt.Println(t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
-		fmt.Printf("Kind of field: %v\n", f.Type.Kind())
-		if f.Type.Kind() == reflect.Struct {
-			nval := reflect.Indirect(reflect.ValueOf(f))
-			err := mergeEnvAndConfig(env, &nval, &f.Type)
-			if err != nil {
-				return err
-			}
-		} else {
-			tag := f.Tag.Get("env")
-			envValue, ok := env[tag]
-			if ok {
-				val.Field(i).SetString(envValue)
-				fmt.Printf("Set value <%v> to property <%v>\n", envValue, f.Name)
-			}
+		tag := f.Tag.Get("env")
+		envNameList[i] = tag
+	}
+	return envNameList
+}
+
+func checkEnvMap(env map[string]string) error {
+	noEnv := make([]string, 0)
+	for _, envName := range getEnvNameList() {
+		_, ok := env[envName]
+		if !ok {
+			noEnv = append(noEnv, envName)
 		}
+	}
+	if len(noEnv) != 0 {
+		return fmt.Errorf("Can't find these ENV variables: %+v", noEnv)
 	}
 	return nil
 }
 
-func parseConfigFile(cf *configFile) (*Config, error) {
-	return nil, nil
-}
+func GetConfig(env map[string]string) (*Config, error) {
+	cf := &Config{}
 
-func GetConfig(configFileBytes []byte, env map[string]string) (*Config, error) {
-	cff, err := parseConfigBytes(configFileBytes)
+	err := checkEnvMap(env)
 	if err != nil {
-		return nil, fmt.Errorf("Can't parse config file bytes: %v", err)
+		return cf, err
 	}
 
-	val := reflect.Indirect(reflect.ValueOf(cff))
-	t := val.Type()
-	err = mergeEnvAndConfig(env, &val, &t)
+	envs := enviroment{}
+	envVal := reflect.ValueOf(&envs).Elem()
+	envType := envVal.Type()
+	for i := 0; i < envType.NumField(); i++ {
+		f := envType.Field(i)
+		tag := f.Tag.Get("env")
+		envVal.Field(i).SetString(env[tag])
+	}
 
-	if err != nil {
-		return nil, fmt.Errorf("Can't merge config and env: %v", err)
-	}
-	cf, err := parseConfigFile(cff)
-	if err != nil {
-		return nil, fmt.Errorf("Can't parse config file: %v", err)
-	}
-	// сделать проверки конфига...
+	cf.Socket.Host = envs.SocketHost
+	cf.Socket.HTTPPort = envs.SocketHTTPPort
+	cf.Socket.GrpcPort = envs.SocketGrpcPort
+	cf.QuizAPIKey = envs.QuizAPIKey
+	cf.Dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		envs.PostgresHost,
+		envs.PostgresPort,
+		envs.PostgresUser,
+		envs.PostgresPassword,
+		envs.PostgresDBName,
+		envs.PostgresSslMode,
+	)
+	
 	return cf, nil
 }
