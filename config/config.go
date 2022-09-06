@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 )
 
@@ -26,15 +27,13 @@ type enviroment struct {
 	PostgresPort     string `env:"POSTGRES_PORT"`
 	PostgresUser     string `env:"POSTGRES_USER"`
 	PostgresPassword string `env:"POSTGRES_PASSWORD"`
-	PostgresDBName   string `env:"POSTGRES_DBNAME"`
-	PostgresSslMode  string `env:"POSTGRES_SSLMODE"`
+	PostgresDBName   string `env:"POSTGRES_DB"`
 }
 
 func getEnvNameList() []string {
-	val := reflect.Indirect(reflect.ValueOf(enviroment{}))
+	val := reflect.ValueOf(enviroment{})
 	t := val.Type()
 	envNameList := make([]string, t.NumField())
-	fmt.Println(t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		tag := f.Tag.Get("env")
@@ -71,21 +70,25 @@ func GetConfig(env map[string]string) (*Config, error) {
 	for i := 0; i < envType.NumField(); i++ {
 		f := envType.Field(i)
 		tag := f.Tag.Get("env")
-		envVal.Field(i).SetString(env[tag])
+		fieldValue := env[tag]
+		osEnv, ok := os.LookupEnv(tag)
+		if ok {
+			fieldValue = osEnv
+		}
+		envVal.Field(i).SetString(fieldValue)
 	}
 
 	cf.Socket.Host = envs.SocketHost
 	cf.Socket.HTTPPort = envs.SocketHTTPPort
 	cf.Socket.GrpcPort = envs.SocketGrpcPort
 	cf.QuizAPIKey = envs.QuizAPIKey
-	cf.Dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+	cf.Dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		envs.PostgresHost,
 		envs.PostgresPort,
 		envs.PostgresUser,
 		envs.PostgresPassword,
 		envs.PostgresDBName,
-		envs.PostgresSslMode,
 	)
-	
+
 	return cf, nil
 }

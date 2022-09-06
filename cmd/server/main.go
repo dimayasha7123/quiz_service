@@ -77,7 +77,7 @@ func main() {
 		logger.Log.Fatalf("Can't get config from env: %v", err)
 	}
 
-	logger.Log.Info("Config unmarshalled")
+	logger.Log.Infow("Config unmarshalled", "config", cfg)
 
 	ctx := context.Background()
 	adp, err := db.New(ctx, cfg.Dsn)
@@ -126,7 +126,7 @@ func main() {
 // + добить норм логгирование (подумать как его засунуть в проект, пока тупо глобальная переменная)
 // - переделать тяжелые запросы в базку
 // + переделать конфиг (давать его аргементом мейну)
-// - завернуть в докер
+// + завернуть в докер
 // - списков квизов вынести в конфиг??? или не конфиг... сложно...
 // -
 

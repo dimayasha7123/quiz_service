@@ -6,4 +6,4 @@ ADD ./goose_script.sh ./
 
 RUN chmod +x ./goose_script.sh
 
-CMD ./goose_script.sh
+ENTRYPOINT "./goose_script.sh"

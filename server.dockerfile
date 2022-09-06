@@ -6,10 +6,9 @@ WORKDIR /build
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main ./cmd/server
 FROM scratch
 COPY --from=builder /build/main /app/
-COPY /config/config.yaml /app/
+COPY .env /app/
 WORKDIR /app
-ENTRYPOINT ["./main", "--config", "./config.yaml"]
-
+ENTRYPOINT ["./main", "--env", "./.env"]
 
 # v2
 # FROM golang:alpine as builder
