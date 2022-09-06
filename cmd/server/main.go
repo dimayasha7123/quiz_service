@@ -8,12 +8,12 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/dimayasha7123/quiz_service/config"
 	"github.com/dimayasha7123/quiz_service/internal/app"
 	"github.com/dimayasha7123/quiz_service/internal/db"
 	"github.com/dimayasha7123/quiz_service/internal/mw"
 	quizApi "github.com/dimayasha7123/quiz_service/internal/quiz_party_api_client"
 	"github.com/dimayasha7123/quiz_service/internal/repository"
+	"github.com/dimayasha7123/quiz_service/internal/utils/config"
 	"github.com/dimayasha7123/quiz_service/internal/utils/logger"
 	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -124,11 +124,10 @@ func main() {
 
 // что доделать?
 // + добить норм логгирование (подумать как его засунуть в проект, пока тупо глобальная переменная)
-// - переделать тяжелые запросы в базку
+// + переделать тяжелые запросы в базку
 // + переделать конфиг (давать его аргементом мейну)
 // + завернуть в докер
-// - списков квизов вынести в конфиг??? или не конфиг... сложно...
-// -
+// - допилить тестики
 
 // что хотелось бы иметь?
-// - впихнуть метрики
+// - впихнуть метрики или что-то еще...
