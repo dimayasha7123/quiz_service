@@ -70,10 +70,11 @@ func main() {
 		logger.Log.Fatalf("Can't read env file: %v", err)
 	}
 
-	cfg, err := config.GetConfig(env)
+	envCfg, err := config.New(env)
 	if err != nil {
 		logger.Log.Fatalf("Can't get config from env: %v", err)
 	}
+	cfg := envCfg.Get()
 
 	logger.Log.Infow("Config unmarshalled", "config", cfg)
 
