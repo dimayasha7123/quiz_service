@@ -106,27 +106,12 @@ func main() {
 	pb.RegisterQuizServiceServer(grpcServer, qserver)
 	logger.Log.Info("Register gRPC server")
 
-	go func() {
-		err = grpcServer.Serve(lis)
-		if err != nil {
-			logger.Log.Fatalf("Error while server working: %v", err)
-		}
-	}()
-	logger.Log.Info("Server running!")
-
 	go runRest(cfg.Socket)
 	logger.Log.Info("HTTP-proxy server running!")
 
-	for true {
+	logger.Log.Info("Server running!")
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		logger.Log.Fatalf("Error while server working: %v", err)
 	}
 }
-
-// что доделать?
-// + добить норм логгирование (подумать как его засунуть в проект, пока тупо глобальная переменная)
-// + переделать тяжелые запросы в базку
-// + переделать конфиг (давать его аргементом мейну)
-// + завернуть в докер
-// - допилить тестики
-
-// что хотелось бы иметь?
-// - впихнуть метрики или что-то еще...
