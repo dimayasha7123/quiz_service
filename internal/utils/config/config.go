@@ -45,8 +45,9 @@ func getEnvNameList() []string {
 func checkEnvMap(env map[string]string) error {
 	noEnv := make([]string, 0)
 	for _, envName := range getEnvNameList() {
-		_, ok := env[envName]
-		if !ok {
+		_, okMap := env[envName]
+		_, okEnv := os.LookupEnv(envName)
+		if !okMap && !okEnv {
 			noEnv = append(noEnv, envName)
 		}
 	}
@@ -70,10 +71,12 @@ func GetConfig(env map[string]string) (*Config, error) {
 	for i := 0; i < envType.NumField(); i++ {
 		f := envType.Field(i)
 		tag := f.Tag.Get("env")
-		fieldValue := env[tag]
+		var fieldValue string
 		osEnv, ok := os.LookupEnv(tag)
 		if ok {
 			fieldValue = osEnv
+		} else {
+			fieldValue = env[tag]
 		}
 		envVal.Field(i).SetString(fieldValue)
 	}
