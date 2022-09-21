@@ -7,6 +7,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 
 	"github.com/dimayasha7123/quiz_service/internal/app"
 	"github.com/dimayasha7123/quiz_service/internal/db"
@@ -108,6 +110,17 @@ func main() {
 
 	go runRest(cfg.Socket)
 	logger.Log.Info("HTTP-proxy server running!")
+
+	go func() {
+		sigchan := make(chan os.Signal, 1)
+		signal.Notify(sigchan, os.Interrupt)
+		<-sigchan
+		logger.Log.Infof("Program was killed")
+
+		// TODO gracefull shutdown
+
+		logger.Log.Fatalf("I'll be back!")
+	}()
 
 	logger.Log.Info("Server running!")
 	err = grpcServer.Serve(lis)
