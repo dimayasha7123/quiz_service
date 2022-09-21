@@ -1,4 +1,6 @@
 version: "3.8"
+volumes:
+  qs_data:
 services:
   db:
     image: postgres:13.3
@@ -6,9 +8,9 @@ services:
     env_file:
       - .env
     ports:
-      - "5432:${POSTGRES_PORT}"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
-      - ./db-data:/var/lib/postgresql/data
+      - qs_data:/var/lib/postgresql/data
     healthcheck:
       test:
         [
@@ -40,8 +42,8 @@ services:
       - SOCKET_HOST=0.0.0.0
       - POSTGRES_HOST=db
     ports:
-      - "8080:${SOCKET_GRPC_PORT}"
-      - "8081:${SOCKET_HTTP_PORT}"
+      - "${SOCKET_GRPC_PORT}:${SOCKET_GRPC_PORT}"
+      - "${SOCKET_HTTP_PORT}:${SOCKET_HTTP_PORT}"
     restart: always
     depends_on:
       db:
