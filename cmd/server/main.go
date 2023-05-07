@@ -4,12 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
-
 	"github.com/dimayasha7123/quiz_service/internal/app"
 	"github.com/dimayasha7123/quiz_service/internal/db"
 	"github.com/dimayasha7123/quiz_service/internal/mw"
@@ -17,11 +11,19 @@ import (
 	"github.com/dimayasha7123/quiz_service/internal/repository"
 	"github.com/dimayasha7123/quiz_service/internal/utils/config"
 	"github.com/dimayasha7123/quiz_service/internal/utils/logger"
+	"github.com/dimayasha7123/quiz_service/internal/utils/network_config"
 	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func runRest(socket config.Socket) {
@@ -44,12 +46,9 @@ func runRest(socket config.Socket) {
 	}
 }
 
-// Rem protoc --go_out=pkg --go_opt=paths=source_relative --go-grpc_out=pkg --go-grpc_opt=paths=source_relative api/api.proto
-// Rem protoc --go_out=. --go-grpc_out=. --grpc-gateway_out=. --grpc-gateway_opt generate_unbound_methods=true --openapiv2_out . api.proto
-// protoc -I ./api --go_out ./pkg/api --go_opt paths=source_relative --go-grpc_out ./pkg/api --go-grpc_opt paths=source_relative --grpc-gateway_out ./pkg/api --grpc-gateway_opt paths=source_relative --grpc-gateway_opt generate_unbound_methods=true --openapiv2_out ./pkg/api api/api.proto
-
 const (
-	defaultEnvPath = "./.env"
+	defaultEnvPath    = ".env"
+	defaultNetCfgPath = "network_config.yaml"
 )
 
 func main() {
@@ -61,23 +60,32 @@ func main() {
 	var envPath string
 	flag.StringVar(&envPath, "env", defaultEnvPath, "path to .env")
 
-	flag.Parse()
-	if envPath == "" {
-		logger.Log.Infof("Env path empty, take default: %s\n", defaultEnvPath)
-	}
+	var netCfgPath string
+	flag.StringVar(&netCfgPath, "net_config", defaultNetCfgPath, "path to network config")
 
-	env, err := godotenv.Read(defaultEnvPath)
+	flag.Parse()
+	logger.Log.Infof("Env path: %s", envPath)
+	logger.Log.Infof("Network config path: %s", netCfgPath)
+
+	env, err := godotenv.Read(envPath)
 	if err != nil {
 		logger.Log.Fatalf("Can't read env file: %v", err)
 	}
+	logger.Log.Infof("Read env. variables from file: %v", env)
 
 	envCfg, err := config.New(env)
 	if err != nil {
 		logger.Log.Fatalf("Can't get config from env: %v", err)
 	}
 	cfg := envCfg.Get()
+	logger.Log.Infof("Config unmarshalled: %+v", cfg)
 
-	logger.Log.Infow("Config unmarshalled", "config", cfg)
+	netCfgKeeper, err := network_config.New(netCfgPath)
+	if err != nil {
+		logger.Log.Fatalf("Can't get network config: %v", err)
+	}
+	netCfg := netCfgKeeper.Get()
+	logger.Log.Infof("Read network config: %+v", netCfg)
 
 	ctx := context.Background()
 	adp, err := db.New(ctx, cfg.Dsn)
@@ -87,7 +95,7 @@ func main() {
 
 	logger.Log.Info("Get DB adapter")
 
-	qserver := app.New(repository.New(adp), quizApi.New(cfg.QuizAPIKey))
+	qserver := app.New(repository.New(adp), quizApi.New(netCfg.QuizAPIKey))
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort))
 	if err != nil {
 		logger.Log.Fatalw("Failed to listen TCP",
@@ -107,23 +115,27 @@ func main() {
 	pb.RegisterQuizServiceServer(grpcServer, qserver)
 	logger.Log.Info("Register gRPC server")
 
+	go func() {
+		err = grpcServer.Serve(lis)
+		if err != nil && err != grpc.ErrServerStopped {
+			logger.Log.Fatalf("Error while server working: %v", err)
+		}
+	}()
+	logger.Log.Info("Server is running!")
+
 	go runRest(cfg.Socket)
 	logger.Log.Info("HTTP-proxy server running!")
 
-	go func() {
-		sigchan := make(chan os.Signal, 1)
-		signal.Notify(sigchan, os.Interrupt)
-		<-sigchan
-		logger.Log.Infof("Program was killed")
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-		// TODO gracefull shutdown
+	<-done
+	fmt.Println()
+	log.Println("Server has been stopped")
 
-		logger.Log.Fatalf("I'll be back!")
-	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-	logger.Log.Info("Server running!")
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		logger.Log.Fatalf("Error while server working: %v", err)
-	}
+	grpcServer.GracefulStop()
+	log.Println("Server exited properly")
 }

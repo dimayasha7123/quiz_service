@@ -9,8 +9,9 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/server /app/
 COPY .env /app/
+COPY network_config.yaml /app/
 WORKDIR /app
-ENTRYPOINT ["./server", "--env", "./.env"]
+ENTRYPOINT ["./server", "--env", ".env", "--net_config", "network_config.yaml"]
 
 # v2
 # FROM golang:alpine as builder

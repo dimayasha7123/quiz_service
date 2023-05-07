@@ -1,0 +1,4 @@
+quiz_api_key: cCP7GHWCoe2d4VBysvmaAT1x1hToB54mm1rdEiYK
+allowed_clients:
+  - login: tg_bot
+    password: 7123

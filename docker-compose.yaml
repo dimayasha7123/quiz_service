@@ -5,10 +5,8 @@ services:
   db:
     image: postgres:13.3
     restart: always
-    env_file:
-      - .env
     ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+      - ${POSTGRES_PORT}:5432
     volumes:
       - qs_data:/var/lib/postgresql/data
     healthcheck:
@@ -36,8 +34,6 @@ services:
     build:
       context: .
       dockerfile: server.dockerfile
-    env_file:
-      - .env
     environment:
       - SOCKET_HOST=0.0.0.0
       - POSTGRES_HOST=db

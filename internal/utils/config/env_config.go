@@ -7,15 +7,15 @@ import (
 )
 
 type envConfig struct {
-	enviroment enviroment
-	env map[string]string
+	environment environment
+	env         map[string]string
 }
 
-type enviroment struct {
-	SocketHost       string `env:"SOCKET_HOST"`
-	SocketGrpcPort   string `env:"SOCKET_GRPC_PORT"`
-	SocketHTTPPort   string `env:"SOCKET_HTTP_PORT"`
-	QuizAPIKey       string `env:"QUIZ_API_KEY"`
+type environment struct {
+	SocketHost     string `env:"SOCKET_HOST"`
+	SocketGrpcPort string `env:"SOCKET_GRPC_PORT"`
+	SocketHTTPPort string `env:"SOCKET_HTTP_PORT"`
+	//QuizAPIKey       string `env:"QUIZ_API_KEY"`
 	PostgresHost     string `env:"POSTGRES_HOST"`
 	PostgresPort     string `env:"POSTGRES_PORT"`
 	PostgresUser     string `env:"POSTGRES_USER"`
@@ -29,13 +29,13 @@ func New(env map[string]string) (*envConfig, error) {
 		return &envConfig{}, err
 	}
 	return &envConfig{
-		enviroment: enviroment{},
-		env: env,
+		environment: environment{},
+		env:         env,
 	}, nil
 }
 
 func getEnvNameList() []string {
-	val := reflect.ValueOf(enviroment{})
+	val := reflect.ValueOf(environment{})
 	t := val.Type()
 	envNameList := make([]string, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
@@ -61,10 +61,10 @@ func checkEnvMap(env map[string]string) error {
 	return nil
 }
 
-func (ec * envConfig) Get() (*Config) {
+func (ec *envConfig) Get() *Config {
 	cf := &Config{}
 
-	envs := enviroment{}
+	envs := environment{}
 	envVal := reflect.ValueOf(&envs).Elem()
 	envType := envVal.Type()
 	for i := 0; i < envType.NumField(); i++ {
@@ -83,7 +83,7 @@ func (ec * envConfig) Get() (*Config) {
 	cf.Socket.Host = envs.SocketHost
 	cf.Socket.HTTPPort = envs.SocketHTTPPort
 	cf.Socket.GrpcPort = envs.SocketGrpcPort
-	cf.QuizAPIKey = envs.QuizAPIKey
+	//cf.QuizAPIKey = envs.QuizAPIKey
 	cf.Dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		envs.PostgresHost,
 		envs.PostgresPort,

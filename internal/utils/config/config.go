@@ -5,9 +5,8 @@ type Configuration interface {
 }
 
 type Config struct {
-	Socket     Socket
-	QuizAPIKey string
-	Dsn        string
+	Socket Socket
+	Dsn    string
 }
 
 type Socket struct {
