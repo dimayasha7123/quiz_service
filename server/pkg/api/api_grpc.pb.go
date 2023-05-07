@@ -3,7 +3,6 @@
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.20.1
 // source: api.proto
-
 package api
 
 import (

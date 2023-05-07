@@ -37,4 +37,3 @@ type Logger interface {
 func SetLogger(newLogger Logger) {
 	Log = newLogger
 }
-
