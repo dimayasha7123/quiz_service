@@ -2,7 +2,7 @@ package mw
 
 import (
 	"context"
-	"github.com/dimayasha7123/quiz_service/server/internal/utils/logger"
+	"github.com/dimayasha7123/quiz_service/utils/logger"
 
 	"google.golang.org/grpc"
 )

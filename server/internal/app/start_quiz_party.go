@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 	"github.com/dimayasha7123/quiz_service/server/internal/models"
-	"github.com/dimayasha7123/quiz_service/server/internal/utils/logger"
 	pb "github.com/dimayasha7123/quiz_service/server/pkg/api"
+	"github.com/dimayasha7123/quiz_service/utils/logger"
 	"time"
 
 	"google.golang.org/grpc/codes"

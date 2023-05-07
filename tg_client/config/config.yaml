@@ -1,0 +1,5 @@
+socket:
+  host: "localhost"
+  grpcPort: "8082"
+telegramApiKey: "5323294543:AAF-uuZS7_SR-j8XBuxTrYmpy_zN26u7qrA"
+dsn: "host=localhost port=5433 user=postgres password=postgres dbname=quiz_tg_bot sslmode=disable"

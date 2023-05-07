@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dimayasha7123/quiz_service/server/internal/models"
-	"github.com/dimayasha7123/quiz_service/server/internal/utils/logger"
+	"github.com/dimayasha7123/quiz_service/utils/logger"
 	"io/ioutil"
 	"net/http"
 )
