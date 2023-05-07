@@ -5,21 +5,28 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dimayasha7123/quiz_service/internal/models"
+	"github.com/dimayasha7123/quiz_service/internal/utils/logger"
 	"io/ioutil"
+	"net/http"
 )
 
-func boolStrOrNilToBool(s string) bool {
-	if s == "true" {
-		return true
-	}
-	return false
-}
-
 func (qac *QuizPartyApiClient) GetParty(tag string) (*models.Party, error) {
-	getUrl := fmt.Sprintf("https://quizapi.io/api/v1/questions?apiKey=%s&tags=%s&limit=%d", qac.apiKey, tag, questCount)
-	resp, err := qac.cl.Get(getUrl)
+	getUrl := fmt.Sprintf("https://quizapi.io/api/v1/questions?tags=%s&limit=%d", tag, questCount)
+	req, err := http.NewRequest(http.MethodGet, getUrl, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can't create http request: %v", err)
+	}
+	req.Header.Set("X-Api-Key", qac.apiKey)
+
+	resp, err := qac.cl.Do(req)
+	defer func() {
+		err = resp.Body.Close()
+		if err != nil {
+			logger.Log.Errorf("can't close http response body: %v", err)
+		}
+	}()
+	if err != nil {
+		return nil, fmt.Errorf("can't do http request: %v", err)
 	}
 
 	bytes, err := ioutil.ReadAll(resp.Body)
@@ -94,11 +101,6 @@ func (qac *QuizPartyApiClient) GetParty(tag string) (*models.Party, error) {
 			Tags:    tags,
 			Answers: answers,
 		}
-	}
-
-	err = resp.Body.Close()
-	if err != nil {
-		return nil, err
 	}
 
 	return &models.Party{Questions: questions}, nil

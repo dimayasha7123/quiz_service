@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/dimayasha7123/quiz_service/internal/models"
-	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 	"github.com/dimayasha7123/quiz_service/internal/utils/logger"
+	pb "github.com/dimayasha7123/quiz_service/pkg/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -38,7 +38,7 @@ func (q *qserver) StartQuizParty(ctx context.Context, req *pb.QuizUserInfo) (*pb
 		return nil, status.Error(codes.Internal, "quizApiClient error")
 	}
 
-	logger.Log.Infof("Time fot api request: ", time.Since(startTime))
+	logger.Log.Infof("Time for QuizAPI request: %v", time.Since(startTime))
 
 	party.Questions = apiParty.Questions
 
@@ -46,7 +46,7 @@ func (q *qserver) StartQuizParty(ctx context.Context, req *pb.QuizUserInfo) (*pb
 	if err != nil {
 		return nil, status.Error(codes.Internal, "error when add questions")
 	}
-	logger.Log.Infof("Add %d quest.", countAddedQuestions)
+	logger.Log.Infof("Add %d questions", countAddedQuestions)
 
 	err = q.repo.AddAllPartyQuestion(ctx, party.Questions, party.ID)
 	if err != nil {

@@ -9,16 +9,17 @@ import (
 
 func LogInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	resp, err := handler(ctx, req)
+	msg := "log interceptor"
 	if err != nil {
 		logger.Log.Infow(
-			"log interceptor",
+			msg,
 			"full method", info.FullMethod,
 			"request", req,
 			"error", err,
 		)
 	} else {
 		logger.Log.Infow(
-			"log interceptor",
+			msg,
 			"full method", info.FullMethod,
 			"request", req,
 		)

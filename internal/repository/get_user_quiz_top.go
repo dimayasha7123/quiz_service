@@ -26,7 +26,7 @@ func (r *repository) GetUserQuizTop(ctx context.Context, quizID, userID int64) (
 		from (
 		select ROW_NUMBER() over () as place, id, q.name, q.mp
 			from (
-			select ua.id id, ua.name name, max(points) mp
+			select ua.id id, ua.name, max(points) mp
 				from party
 				join user_account ua on ua.id = party.user_account_id
 				where completed

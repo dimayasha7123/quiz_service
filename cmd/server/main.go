@@ -42,7 +42,6 @@ func runRest(socket config.Socket) {
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", socket.HTTPPort), mux); err != nil {
 		logger.Log.Fatalf("Error while HTTP-server working: %v")
 	}
-
 }
 
 // Rem protoc --go_out=pkg --go_opt=paths=source_relative --go-grpc_out=pkg --go-grpc_opt=paths=source_relative api/api.proto
@@ -64,7 +63,7 @@ func main() {
 
 	flag.Parse()
 	if envPath == "" {
-		logger.Log.Fatal("Env path can't be empty")
+		logger.Log.Infof("Env path empty, take default: %s\n", defaultEnvPath)
 	}
 
 	env, err := godotenv.Read(defaultEnvPath)

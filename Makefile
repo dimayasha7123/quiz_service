@@ -1,5 +1,5 @@
 GOOSE_DRIVER?=postgres
-GOOSE_DBSTRING?="user=postgres password=postgres dbname=quiz_service_db sslmode=disable"
+GOOSE_DBSTRING?="host=localhost port=5432 user=postgres password=postgres dbname=quiz_service_db sslmode=disable"
 
 goose_status:
 	goose -dir ./migrations ${GOOSE_DRIVER} ${GOOSE_DBSTRING} status
