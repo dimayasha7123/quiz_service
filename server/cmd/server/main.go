@@ -12,9 +12,11 @@ import (
 	"github.com/dimayasha7123/quiz_service/server/internal/utils/config"
 	"github.com/dimayasha7123/quiz_service/server/internal/utils/network_config"
 	"github.com/dimayasha7123/quiz_service/server/pkg/api"
+	"github.com/dimayasha7123/quiz_service/utils/env_mapper"
 	"github.com/dimayasha7123/quiz_service/utils/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
@@ -23,7 +25,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func runRest(socket config.Socket) {
@@ -52,47 +53,59 @@ const (
 )
 
 func main() {
-	err := logger.RegisterLog()
+	zapLogger, err := zap.NewDevelopment()
 	if err != nil {
-		log.Fatalf("Can't register logger: %v", err)
+		log.Fatalf("Can't create logger: %v", err)
 	}
+	sugarLogger := zapLogger.Sugar()
+	logger.SetLogger(sugarLogger)
 
 	var envPath string
 	flag.StringVar(&envPath, "env", defaultEnvPath, "path to .env")
 
 	var netCfgPath string
-	flag.StringVar(&netCfgPath, "net_config", defaultNetCfgPath, "path to network config")
+	flag.StringVar(&netCfgPath, "config", defaultNetCfgPath, "path to network config")
 
 	flag.Parse()
 	logger.Log.Infof("Env path: %s", envPath)
 	logger.Log.Infof("Network config path: %s", netCfgPath)
 
-	env, err := godotenv.Read(envPath)
+	// TODO: вынести в функцию получение конфига
+	fileEnvs, err := godotenv.Read(envPath)
 	if err != nil {
 		logger.Log.Fatalf("Can't read env file: %v", err)
 	}
-	logger.Log.Infof("Read env. variables from file: %v", env)
+	logger.Log.Infof("Read env. variables from file: %v", fileEnvs)
 
-	envCfg, err := config.New(env)
+	updatedEnvs, updatedCount := env_mapper.ReplaceFileWithEnv(fileEnvs)
+	if updatedCount != 0 {
+		logger.Log.Infof("Update %d env. variables: %v", updatedCount, updatedEnvs)
+	}
+
+	envConfigKeeper := config.New(updatedEnvs)
+	cfg, err := envConfigKeeper.Get()
 	if err != nil {
 		logger.Log.Fatalf("Can't get config from env: %v", err)
 	}
-	cfg := envCfg.Get()
 	logger.Log.Infof("Config unmarshalled: %+v", cfg)
 
-	netCfgKeeper, err := network_config.New(netCfgPath)
+	// TODO: вынести в функцию получение нетворк конфига
+	newCfgBytes, err := os.ReadFile(netCfgPath)
+	if err != nil {
+		logger.Log.Fatalf("Can't read network config file: %v", err)
+	}
+	netCfgKeeper := network_config.New(newCfgBytes)
+	netCfg, err := netCfgKeeper.Get()
 	if err != nil {
 		logger.Log.Fatalf("Can't get network config: %v", err)
 	}
-	netCfg := netCfgKeeper.Get()
 	logger.Log.Infof("Read network config: %+v", netCfg)
 
 	ctx := context.Background()
-	adp, err := db.New(ctx, cfg.Dsn)
+	adp, err := db.New(ctx, cfg.PostgresDSN)
 	if err != nil {
 		logger.Log.Fatalf("Can't create DB adapter: %v", err)
 	}
-
 	logger.Log.Info("Get DB adapter")
 
 	qserver := app.New(repository.New(adp), quizApi.New(netCfg.QuizAPIKey))
@@ -101,19 +114,15 @@ func main() {
 		logger.Log.Fatalw("Failed to listen TCP",
 			"err", err,
 			"host", cfg.Socket.Host,
-			"gRPCport", cfg.Socket.GrpcPort,
+			"gRPCPort", cfg.Socket.GrpcPort,
 		)
 	}
 	logger.Log.Infof("Listening TCP at %s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort)
 
 	opts := []grpc.ServerOption{grpc.UnaryInterceptor(mw.LogInterceptor)}
-	logger.Log.Infof("Create server options")
-
 	grpcServer := grpc.NewServer(opts...)
-	logger.Log.Info("Create gRPC server")
-
 	api.RegisterQuizServiceServer(grpcServer, qserver)
-	logger.Log.Info("Register gRPC server")
+	logger.Log.Info("Create and register gRPC server")
 
 	go func() {
 		err = grpcServer.Serve(lis)
@@ -133,8 +142,8 @@ func main() {
 	fmt.Println()
 	log.Println("Server has been stopped")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	//defer cancel()
 
 	grpcServer.GracefulStop()
 	log.Println("Server exited properly")

@@ -17,18 +17,15 @@ func (k *envConfigKeeper) Get() (Config, error) {
 	}
 
 	cfg := Config{
-		Socket: Socket{
-			Host:     k.envs[socketHost],
-			GrpcPort: k.envs[socketGRPCPort],
-			HTTPPort: k.envs[socketHTTPPort],
+		Client: Client{
+			Host: k.envs[clientHost],
+			Port: k.envs[clientPort],
 		},
-		PostgresDSN: fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			k.envs[postgresHost],
-			k.envs[postgresPort],
-			k.envs[postgresUser],
-			k.envs[postgresPassword],
-			k.envs[postgresDB],
-		),
+		Redis: Redis{
+			Host:     k.envs[redisHost],
+			Port:     k.envs[redisPort],
+			Password: k.envs[redisPassword],
+		},
 	}
 
 	return cfg, nil
@@ -36,14 +33,11 @@ func (k *envConfigKeeper) Get() (Config, error) {
 
 func (k *envConfigKeeper) checkEnvs() error {
 	needEnvs := []string{
-		socketHost,
-		socketGRPCPort,
-		socketHTTPPort,
-		postgresHost,
-		postgresPort,
-		postgresUser,
-		postgresPassword,
-		postgresDB,
+		clientHost,
+		clientPort,
+		redisHost,
+		redisPort,
+		redisPassword,
 	}
 
 	notFound := make([]string, 0, len(needEnvs))

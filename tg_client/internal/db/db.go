@@ -1,10 +1,16 @@
 package db
 
 import (
-	"context"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"fmt"
+	"github.com/dimayasha7123/quiz_service/tg_client/utils/config"
+	"github.com/redis/go-redis/v9"
 )
 
-func New(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
-	return pgxpool.Connect(ctx, dsn)
+func New(cfg config.Redis) *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+		Password: cfg.Password,
+		DB:       0,
+	})
+	return client
 }

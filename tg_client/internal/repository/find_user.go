@@ -1,17 +1,15 @@
 package repository
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
-func (r *repository) FindUser(ctx context.Context, tgID int64) (string, error) {
-
-	query := `
-	select username from user_account where tg_id = $1;
-	`
-
-	var username string
-	err := r.pool.QueryRow(ctx, query, tgID).Scan(&username)
+func (r repository) FindUser(ctx context.Context, tgID int64) (string, error) {
+	key := getKeyByTGID(tgID)
+	name, err := r.client.HGet(ctx, key, fieldName).Result()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("can't get username by key %d: %v", tgID, err)
 	}
-	return username, nil
+	return name, nil
 }

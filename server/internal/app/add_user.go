@@ -9,13 +9,22 @@ import (
 )
 
 func (q *qserver) AddUser(ctx context.Context, req *pb.User) (*pb.UserID, error) {
-
-	userID, err := q.repo.AddUser(ctx, req.Name)
-
+	userID, err := q.repo.GetUser(ctx, req.Name)
 	if err != nil {
 		return &pb.UserID{ID: -1}, status.Error(
-			codes.AlreadyExists,
-			fmt.Sprintf("user with name <%s> is already exists", req.Name),
+			codes.Internal,
+			fmt.Sprintf("can't check if user <%s> already exists", req.Name),
+		)
+	}
+	if userID != -1 {
+		return &pb.UserID{ID: userID}, nil
+	}
+
+	userID, err = q.repo.AddUser(ctx, req.Name)
+	if err != nil {
+		return &pb.UserID{ID: -1}, status.Error(
+			codes.Internal,
+			fmt.Sprintf("can't add user <%s> to database", req.Name),
 		)
 	}
 

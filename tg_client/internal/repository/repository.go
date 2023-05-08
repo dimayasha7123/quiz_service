@@ -1,13 +1,13 @@
 package repository
 
 import (
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 type repository struct {
-	pool *pgxpool.Pool
+	client *redis.Client
 }
 
-func New(pool *pgxpool.Pool) *repository {
-	return &repository{pool: pool}
+func New(client *redis.Client) *repository {
+	return &repository{client: client}
 }

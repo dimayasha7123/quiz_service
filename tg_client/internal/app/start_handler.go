@@ -14,13 +14,9 @@ func (b *bclient) startHandler(ctx context.Context, update models.Update) (strin
 	b.users.RUnlock()
 
 	var fmtText string
-
 	if ok {
-
 		fmtText = "Welcome, %s. Again"
-
 	} else {
-
 		fmtText = "Welcome, %s"
 		user = models.NewUser(
 			update.Message.From.ID,
@@ -33,18 +29,15 @@ func (b *bclient) startHandler(ctx context.Context, update models.Update) (strin
 		}
 		user.QSID = qsID.ID
 
+		b.users.SafeUpdateUser(user)
+
 		err = b.repo.AddUser(ctx, user)
 		if err != nil {
 			return "", err
 		}
-
-		b.users.Lock()
-		b.users.M[user.TGID] = user
-		b.users.Unlock()
-
 	}
 
-	text := fmt.Sprintf(fmtText, user.Username)
+	text := fmt.Sprintf(fmtText, user.Name)
 
 	return text, nil
 }

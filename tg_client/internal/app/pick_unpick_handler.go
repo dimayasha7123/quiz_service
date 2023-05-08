@@ -31,6 +31,7 @@ func (b *bclient) pickUnpickHandler(ctx context.Context, update models.Update, c
 	}
 
 	user.Questions[user.CurrentQuestion].AnswerOptions[ansNum-1].Picked = value
+	b.users.SafeUpdateUser(user)
 
 	text, ok := user.GetQuestion(user.CurrentQuestion)
 	if !ok {

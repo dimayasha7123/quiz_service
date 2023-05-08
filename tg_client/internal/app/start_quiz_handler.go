@@ -55,6 +55,7 @@ func (b *bclient) startQuizHandler(ctx context.Context, update models.Update, co
 	user.State = 1
 	user.QuizPartyID = party.QuizPartyID
 	user.CurrentQuestion = 0
+	b.users.SafeUpdateUser(user)
 
 	text, ok := user.GetQuestion(user.CurrentQuestion)
 	if !ok {

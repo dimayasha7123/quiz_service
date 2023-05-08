@@ -19,15 +19,15 @@ func (qac *QuizPartyApiClient) GetParty(tag string) (*models.Party, error) {
 	req.Header.Set("X-Api-Key", qac.apiKey)
 
 	resp, err := qac.cl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("can't do http request: %v", err)
+	}
 	defer func() {
 		err = resp.Body.Close()
 		if err != nil {
 			logger.Log.Errorf("can't close http response body: %v", err)
 		}
 	}()
-	if err != nil {
-		return nil, fmt.Errorf("can't do http request: %v", err)
-	}
 
 	bytes, err := ioutil.ReadAll(resp.Body)
 	pd := PartyData{}

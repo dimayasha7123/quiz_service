@@ -6,6 +6,7 @@ import (
 )
 
 type Repository interface {
+	GetUser(context.Context, string) (int64, error)
 	AddUser(context.Context, string) (int64, error)
 	GetQuizList(context.Context) ([]models.Quiz, error)
 	AddParty(context.Context, models.Party) (int64, error)

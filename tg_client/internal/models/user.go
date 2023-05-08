@@ -6,10 +6,9 @@ import (
 )
 
 type User struct {
-	ID              int64
 	TGID            int64
 	QSID            int64
-	Username        string
+	Name            string
 	State           int64 // 0 - in lobby, 1 - in quiz
 	Questions       []Question
 	CurrentQuestion int
@@ -26,10 +25,10 @@ type AnswerOption struct {
 	Picked bool
 }
 
-func NewUser(chatID int64, username string) *User {
-	u := &User{
-		TGID:     chatID,
-		Username: username,
+func NewUser(chatID int64, username string) User {
+	u := User{
+		TGID: chatID,
+		Name: username,
 	}
 	return u
 }

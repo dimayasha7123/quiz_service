@@ -12,8 +12,17 @@ import (
 	"github.com/dimayasha7123/quiz_service/tg_client/internal/models"
 )
 
-func (b *bclient) Run(ctx context.Context) error {
+//func (b *bclient) printUsers() {
+//	b.users.Lock()
+//	for key, user := range b.users.M {
+//		logger.Log.Infof("Key: %d", key)
+//		logger.Log.Infof("User: %+v", user)
+//	}
+//	b.users.Unlock()
+//}
 
+func (b *bclient) Run(ctx context.Context) error {
+	// TODO: куда-нибудь вынести
 	users, err := b.repo.GetUsers(ctx)
 	if err != nil {
 		return err
@@ -30,57 +39,60 @@ func (b *bclient) Run(ctx context.Context) error {
 	b.users.Unlock()
 
 	var lastUpdateId int64
-
 	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			url := fmt.Sprintf(
+				"https://api.telegram.org/bot%s/getUpdates?offset=%d",
+				b.apiKey,
+				lastUpdateId+1,
+			)
 
-		url := fmt.Sprintf(
-			"https://api.telegram.org/bot%s/getUpdates?offset=%d",
-			b.apiKey,
-			lastUpdateId+1,
-		)
-
-		resp, err := b.httpClient.Get(url)
-		if err != nil {
-			return err
-		}
-
-		bytes, err := ioutil.ReadAll(resp.Body)
-
-		updates := models.Updates{}
-		err = json.Unmarshal(bytes, &updates)
-		if err != nil {
-			return err
-		}
-
-		if updates.Ok {
-			for _, update := range updates.Result {
-
-				postUrl, err := b.updateRouter(ctx, update)
-				if err != nil {
-					postUrl = fmt.Sprintf(
-						"https://api.telegram.org/bot%s/sendMessage?chat_id=%d&text=%s",
-						b.apiKey,
-						update.Message.Chat.ID,
-						url2.PathEscape(fmt.Sprintf("Ooops, something was wrong.\nError: %v", err)),
-					)
-				}
-				_, err = b.httpClient.Post(postUrl, "text/plain", nil)
-				if err != nil {
-					return err
-				}
-
+			resp, err := b.httpClient.Get(url)
+			if err != nil {
+				return err
 			}
-		}
 
-		if len(updates.Result) != 0 {
-			lastUpdateId = updates.Result[len(updates.Result)-1].UpdateID
-		}
+			bytes, err := ioutil.ReadAll(resp.Body)
 
-		err = resp.Body.Close()
-		if err != nil {
-			return err
-		}
+			updates := models.Updates{}
+			err = json.Unmarshal(bytes, &updates)
+			if err != nil {
+				return err
+			}
 
-		time.Sleep(50 * time.Millisecond)
+			if updates.Ok {
+				for _, update := range updates.Result {
+
+					postUrl, err := b.updateRouter(ctx, update)
+					if err != nil {
+						postUrl = fmt.Sprintf(
+							"https://api.telegram.org/bot%s/sendMessage?chat_id=%d&text=%s",
+							b.apiKey,
+							update.Message.Chat.ID,
+							url2.PathEscape(fmt.Sprintf("Ooops, something was wrong.\nError: %v", err)),
+						)
+					}
+					_, err = b.httpClient.Post(postUrl, "text/plain", nil)
+					if err != nil {
+						return err
+					}
+
+				}
+			}
+
+			if len(updates.Result) != 0 {
+				lastUpdateId = updates.Result[len(updates.Result)-1].UpdateID
+			}
+
+			err = resp.Body.Close()
+			if err != nil {
+				return err
+			}
+
+			time.Sleep(50 * time.Millisecond)
+		}
 	}
 }

@@ -28,8 +28,11 @@ func (b *bclient) confirmHandler(ctx context.Context, update models.Update) (str
 	var text string
 
 	user.CurrentQuestion++
+	b.users.SafeUpdateUser(user)
+
 	if user.CurrentQuestion >= len(user.Questions) {
 		user.State = 0
+		b.users.SafeUpdateUser(user)
 
 		answers := make([]*pb.QuestionRightAnswers, 0, 10)
 
@@ -59,7 +62,6 @@ func (b *bclient) confirmHandler(ctx context.Context, update models.Update) (str
 		sb.WriteString(fmt.Sprintf("Place: %d\n", sTop.UserResults.Place))
 		sb.WriteString("\nTop:\n")
 		for _, r := range sTop.QuizTop.Results {
-
 			username := r.Name
 
 			tgID, err := strconv.ParseInt(r.Name, 10, 64)
@@ -75,12 +77,11 @@ func (b *bclient) confirmHandler(ctx context.Context, update models.Update) (str
 		text = sb.String()
 
 	} else {
-
 		text, ok = user.GetQuestion(user.CurrentQuestion)
 		if !ok {
-			return "", errors.New("quiz has no quiestions")
+			return "", errors.New("quiz has no questions")
 		}
-
 	}
+
 	return text, nil
 }
