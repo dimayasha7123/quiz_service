@@ -3,8 +3,8 @@ package app
 import (
 	"net/http"
 
-	pb "github.com/dimayasha7123/quiz_service/pkg/api"
-	"github.com/dimayasha7123/quiz_service_tg_bot/internal/models"
+	pb "github.com/dimayasha7123/quiz_service/server/pkg/api"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/models"
 )
 
 type bclient struct {

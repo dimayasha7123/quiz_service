@@ -2,7 +2,7 @@
 
 gRPC-cервис, который позволяет проходить квизы на технические темы. Тут должна появиться ссылка на telegram-бота, который будет фронтом к нему.
 
-Есть веб-морда в виде [telegram-бота.](https://github.com/dimayasha7123/quiz_service_tg_bot)
+Есть веб-морда в виде [telegram-бота.](https://github.com/dimayasha7123/quiz_service/tg_client)
 
 Севрис имеет gRPC ручки, а также http-proxy к ним.
 

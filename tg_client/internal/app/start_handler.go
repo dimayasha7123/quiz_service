@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	pb "github.com/dimayasha7123/quiz_service/pkg/api"
-	"github.com/dimayasha7123/quiz_service_tg_bot/internal/models"
+	pb "github.com/dimayasha7123/quiz_service/server/pkg/api"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/models"
 )
 
 func (b *bclient) startHandler(ctx context.Context, update models.Update) (string, error) {

@@ -1,8 +1,12 @@
 package logger
 
-import "go.uber.org/zap"
+import (
+	"fmt"
+	"go.uber.org/zap"
+)
 
 func RegisterLog() error {
+	fmt.Println("!!!in register log!!!")
 	zLogger, err := initLog()
 	if err != nil {
 		return err

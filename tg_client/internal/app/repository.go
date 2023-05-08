@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	"github.com/dimayasha7123/quiz_service_tg_bot/internal/models"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/models"
 )
 
 type repository interface {

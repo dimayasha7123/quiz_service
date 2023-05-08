@@ -9,7 +9,7 @@ import (
 	url2 "net/url"
 	"time"
 
-	"github.com/dimayasha7123/quiz_service_tg_bot/internal/models"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/models"
 )
 
 func (b *bclient) Run(ctx context.Context) error {

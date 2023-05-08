@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dimayasha7123/quiz_service_tg_bot/internal/models"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/models"
 
-	pb "github.com/dimayasha7123/quiz_service/pkg/api"
+	pb "github.com/dimayasha7123/quiz_service/server/pkg/api"
 )
 
 func (b *bclient) confirmHandler(ctx context.Context, update models.Update) (string, error) {

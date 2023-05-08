@@ -1,8 +1,9 @@
 module github.com/dimayasha7123/quiz_service/server
 
 go 1.20
-
+//	github.com/dimayasha7123/quiz_service/utils v0.0.0-20230507214303-9238ebde6a8a
 require (
+	github.com/dimayasha7123/quiz_service/utils v0.0.0-20230507214303-9238ebde6a8a
 	github.com/gojuno/minimock/v3 v3.1.3
 	github.com/golang/protobuf v1.5.3
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2
@@ -28,9 +29,12 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+//replace github.com/dimayasha7123/quiz_service/utils => ../utils

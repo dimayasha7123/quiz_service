@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/dimayasha7123/quiz_service_tg_bot/internal/models"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/models"
 )
 
 func (b *bclient) pickUnpickHandler(ctx context.Context, update models.Update, commandArgs []string, value bool) (string, error) {

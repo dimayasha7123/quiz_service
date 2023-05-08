@@ -6,11 +6,11 @@ import (
 	"log"
 	"os"
 
-	pb "github.com/dimayasha7123/quiz_service/pkg/api"
-	"github.com/dimayasha7123/quiz_service_tg_bot/config"
-	"github.com/dimayasha7123/quiz_service_tg_bot/internal/app"
-	"github.com/dimayasha7123/quiz_service_tg_bot/internal/db"
-	"github.com/dimayasha7123/quiz_service_tg_bot/internal/repository"
+	pb "github.com/dimayasha7123/quiz_service/server/pkg/api"
+	"github.com/dimayasha7123/quiz_service/tg_client/config"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/app"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/db"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/repository"
 	"google.golang.org/grpc"
 )
 
