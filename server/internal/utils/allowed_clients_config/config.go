@@ -1,19 +1,19 @@
-package network_config
+package allowed_clients_config
 
 import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 )
 
-type netConfigKeeper struct {
+type configKeeper struct {
 	bytes []byte
 }
 
-func New(bytes []byte) *netConfigKeeper {
-	return &netConfigKeeper{bytes: bytes}
+func New(bytes []byte) *configKeeper {
+	return &configKeeper{bytes: bytes}
 }
 
-func (k *netConfigKeeper) Get() (Config, error) {
+func (k *configKeeper) Get() (Config, error) {
 	var cfg Config
 
 	err := yaml.Unmarshal(k.bytes, &cfg)

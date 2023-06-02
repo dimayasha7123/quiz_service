@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"github.com/dimayasha7123/quiz_service/server/internal/app"
@@ -9,15 +11,14 @@ import (
 	"github.com/dimayasha7123/quiz_service/server/internal/mw"
 	"github.com/dimayasha7123/quiz_service/server/internal/quiz_party_api_client"
 	"github.com/dimayasha7123/quiz_service/server/internal/repository"
+	"github.com/dimayasha7123/quiz_service/server/internal/utils/allowed_clients_config"
 	"github.com/dimayasha7123/quiz_service/server/internal/utils/config"
-	"github.com/dimayasha7123/quiz_service/server/internal/utils/network_config"
 	"github.com/dimayasha7123/quiz_service/server/pkg/api"
-	"github.com/dimayasha7123/quiz_service/utils/env_mapper"
 	"github.com/dimayasha7123/quiz_service/utils/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net"
@@ -27,6 +28,7 @@ import (
 	"syscall"
 )
 
+// TODO: сделать похожим на main, может даже вынести в main
 func runRest(socket config.Socket) {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -47,9 +49,12 @@ func runRest(socket config.Socket) {
 	}
 }
 
-const (
-	defaultEnvPath    = ".env"
-	defaultNetCfgPath = "network_config.yaml"
+var (
+	allowedClientsCfgPath = "allowed_clients.yaml"
+	crtPath               = "certs/server.crt"
+	keyPath               = "certs/server.key"
+	caPath                = "certs/ca.crt"
+	withMTLS              = false
 )
 
 func main() {
@@ -60,66 +65,85 @@ func main() {
 	sugarLogger := zapLogger.Sugar()
 	logger.SetLogger(sugarLogger)
 
-	var envPath string
-	flag.StringVar(&envPath, "env", defaultEnvPath, "path to .env")
-
-	var netCfgPath string
-	flag.StringVar(&netCfgPath, "config", defaultNetCfgPath, "path to network config")
-
+	flag.StringVar(&allowedClientsCfgPath, "allowed_clients_config_path", allowedClientsCfgPath, "path to allowed clients config")
+	flag.StringVar(&crtPath, "crt_path", crtPath, "path to server.crt file")
+	flag.StringVar(&keyPath, "key_path", keyPath, "path to server.key file")
+	flag.StringVar(&caPath, "ca_path", caPath, "path to ca.crt file")
+	flag.BoolVar(&withMTLS, "with_mTLS", withMTLS, "enable mTLS")
 	flag.Parse()
-	logger.Log.Infof("Env path: %s", envPath)
-	logger.Log.Infof("Network config path: %s", netCfgPath)
 
-	// TODO: вынести в функцию получение конфига
-	fileEnvs, err := godotenv.Read(envPath)
+	configKeeper := config.New()
+	cfg, err := configKeeper.Get()
 	if err != nil {
-		logger.Log.Fatalf("Can't read env file: %v", err)
-	}
-	logger.Log.Infof("Read env. variables from file: %v", fileEnvs)
-
-	updatedEnvs, updatedCount := env_mapper.ReplaceFileWithEnv(fileEnvs)
-	if updatedCount != 0 {
-		logger.Log.Infof("Update %d env. variables: %v", updatedCount, updatedEnvs)
-	}
-
-	envConfigKeeper := config.New(updatedEnvs)
-	cfg, err := envConfigKeeper.Get()
-	if err != nil {
-		logger.Log.Fatalf("Can't get config from env: %v", err)
+		logger.Log.Fatalf("Can't get config from env vars: %v", err)
 	}
 	logger.Log.Infof("Config unmarshalled: %+v", cfg)
 
-	// TODO: вынести в функцию получение нетворк конфига
-	newCfgBytes, err := os.ReadFile(netCfgPath)
+	cfgBytes, err := os.ReadFile(allowedClientsCfgPath)
 	if err != nil {
-		logger.Log.Fatalf("Can't read network config file: %v", err)
+		logger.Log.Fatalf("Can't read allowed clients config file: %v", err)
 	}
-	netCfgKeeper := network_config.New(newCfgBytes)
-	netCfg, err := netCfgKeeper.Get()
+	cfgKeeper := allowed_clients_config.New(cfgBytes)
+	allowedClientsCfg, err := cfgKeeper.Get()
 	if err != nil {
-		logger.Log.Fatalf("Can't get network config: %v", err)
+		logger.Log.Fatalf("Can't get allowed clients config: %v", err)
 	}
-	logger.Log.Infof("Read network config: %+v", netCfg)
+	logger.Log.Infof("Read allowed clients config: %+v", allowedClientsCfg)
+
+	if withMTLS {
+		logger.Log.Infof("mTLS enabled")
+	} else {
+		logger.Log.Infof("Insecure mode")
+	}
 
 	ctx := context.Background()
+
 	adp, err := db.New(ctx, cfg.PostgresDSN)
 	if err != nil {
 		logger.Log.Fatalf("Can't create DB adapter: %v", err)
 	}
 	logger.Log.Info("Get DB adapter")
 
-	qserver := app.New(repository.New(adp), quizApi.New(netCfg.QuizAPIKey))
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort))
+	qserver := app.New(repository.New(adp), quizApi.New(cfg.QuizAPIKey))
+	netAddr := fmt.Sprintf("%s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort)
+	lis, err := net.Listen("tcp", netAddr)
 	if err != nil {
 		logger.Log.Fatalw("Failed to listen TCP",
 			"err", err,
-			"host", cfg.Socket.Host,
-			"gRPCPort", cfg.Socket.GrpcPort,
+			"netAddr", netAddr,
 		)
 	}
-	logger.Log.Infof("Listening TCP at %s:%s", cfg.Socket.Host, cfg.Socket.GrpcPort)
+	logger.Log.Infof("Listening TCP at %s", netAddr)
 
-	opts := []grpc.ServerOption{grpc.UnaryInterceptor(mw.LogInterceptor)}
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(mw.LogInterceptor),
+	}
+
+	if withMTLS {
+		cert, err := tls.LoadX509KeyPair(crtPath, keyPath)
+		if err != nil {
+			logger.Log.Fatalf("Can't read cert key pair: %v", err)
+		}
+
+		certPool := x509.NewCertPool()
+		ca, err := os.ReadFile(caPath)
+		if err != nil {
+			logger.Log.Fatalf("Can't read ca cert: %v", err)
+		}
+
+		ok := certPool.AppendCertsFromPEM(ca)
+		if !ok {
+			logger.Log.Fatalf("Can't append ca cert to pool")
+		}
+		logger.Log.Infof("Read TLS certs")
+
+		opts = append(opts, grpc.Creds(credentials.NewTLS(&tls.Config{
+			ClientAuth:   tls.RequireAndVerifyClientCert,
+			Certificates: []tls.Certificate{cert},
+			ClientCAs:    certPool,
+		})))
+	}
+
 	grpcServer := grpc.NewServer(opts...)
 	api.RegisterQuizServiceServer(grpcServer, qserver)
 	logger.Log.Info("Create and register gRPC server")

@@ -8,10 +8,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflag
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/clientbin /app/
-COPY ../.env /app/
-COPY ../tg_bot_config.yaml /app/
 WORKDIR /app
-ENTRYPOINT ["./clientbin", "--env", ".env", "--config", "tg_bot_config.yaml"]
+ENTRYPOINT ["./clientbin"]
 
 # v2
 # FROM golang:alpine as builder

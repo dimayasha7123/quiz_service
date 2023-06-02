@@ -3,21 +3,27 @@ package config
 import "fmt"
 
 const (
-	clientHost    = "TG_CLIENT_HOST"
-	clientPort    = "TG_CLIENT_PORT"
-	redisHost     = "REDIS_HOST"
-	redisPort     = "REDIS_PORT"
-	redisPassword = "REDIS_PASSWORD"
+	telegramAPIKey = "TELEGRAM_API_KEY"
+	redisHost      = "REDIS_HOST"
+	redisPort      = "REDIS_PORT"
+	redisPassword  = "REDIS_PASSWORD"
+	serverHost     = "QUIZ_SERVER_HOST"
+	serverPort     = "QUIZ_SERVER_PORT"
+	serverLogin    = "QUIZ_SERVER_LOGIN"
+	serverPassword = "QUIZ_SERVER_PASSWORD"
 )
 
 type Config struct {
-	Client Client
-	Redis  Redis
+	TelegramAPIKey string
+	Redis          Redis
+	Server         Server
 }
 
-type Client struct {
-	Host string
-	Port string
+type Server struct {
+	Host     string
+	Port     string
+	Login    string
+	Password string
 }
 
 type Redis struct {
@@ -26,6 +32,6 @@ type Redis struct {
 	Password string
 }
 
-func (cfg Config) GetClientConnectionString() string {
-	return fmt.Sprintf("%s:%s", cfg.Client.Host, cfg.Client.Port)
+func (cfg Config) GetServerConnectionString() string {
+	return fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 }

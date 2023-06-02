@@ -1,16 +1,17 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
-type envConfigKeeper struct {
-	envs map[string]string
+type configKeeper struct{}
+
+func New() *configKeeper {
+	return &configKeeper{}
 }
 
-func New(envs map[string]string) *envConfigKeeper {
-	return &envConfigKeeper{envs: envs}
-}
-
-func (k *envConfigKeeper) Get() (Config, error) {
+func (k *configKeeper) Get() (Config, error) {
 	err := k.checkEnvs()
 	if err != nil {
 		return Config{}, err
@@ -18,24 +19,26 @@ func (k *envConfigKeeper) Get() (Config, error) {
 
 	cfg := Config{
 		Socket: Socket{
-			Host:     k.envs[socketHost],
-			GrpcPort: k.envs[socketGRPCPort],
-			HTTPPort: k.envs[socketHTTPPort],
+			Host:     os.Getenv(socketHost),
+			GrpcPort: os.Getenv(socketGRPCPort),
+			HTTPPort: os.Getenv(socketHTTPPort),
 		},
+		QuizAPIKey: os.Getenv(quizApiKey),
 		PostgresDSN: fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			k.envs[postgresHost],
-			k.envs[postgresPort],
-			k.envs[postgresUser],
-			k.envs[postgresPassword],
-			k.envs[postgresDB],
+			os.Getenv(postgresHost),
+			os.Getenv(postgresPort),
+			os.Getenv(postgresUser),
+			os.Getenv(postgresPassword),
+			os.Getenv(postgresDB),
 		),
 	}
 
 	return cfg, nil
 }
 
-func (k *envConfigKeeper) checkEnvs() error {
+func (k *configKeeper) checkEnvs() error {
 	needEnvs := []string{
+		quizApiKey,
 		socketHost,
 		socketGRPCPort,
 		socketHTTPPort,
@@ -48,7 +51,7 @@ func (k *envConfigKeeper) checkEnvs() error {
 
 	notFound := make([]string, 0, len(needEnvs))
 	for _, env := range needEnvs {
-		_, ok := k.envs[env]
+		_, ok := os.LookupEnv(env)
 		if !ok {
 			notFound = append(notFound, env)
 		}

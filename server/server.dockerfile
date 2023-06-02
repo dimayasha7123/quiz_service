@@ -5,13 +5,12 @@ RUN mkdir /build/
 ADD . /build/
 WORKDIR /build/
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o serverbin ./server/cmd/server
+
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/serverbin /app/
-COPY ../.env /app/
-COPY ../network_config.yaml /app/
 WORKDIR /app
-ENTRYPOINT ["./serverbin", "--env", ".env", "--config", "network_config.yaml"]
+ENTRYPOINT ["./serverbin"]
 
 # v2
 # FROM golang:alpine as builder

@@ -36,12 +36,16 @@ services:
     build:
       context: ./
       dockerfile: server/server.dockerfile
+    command: [ "-with_mTLS=${WITH_MTLS}" ]
     env_file:
       - .env
     ports:
       - ${SOCKET_GRPC_PORT}:${SOCKET_GRPC_PORT}
       - ${SOCKET_HTTP_PORT}:${SOCKET_HTTP_PORT}
     restart: always
+    volumes:
+      - ./allowed_clients.yaml:/app/allowed_clients.yaml
+      - ./certs:/app/certs
     depends_on:
       db:
         condition: service_healthy
@@ -62,9 +66,12 @@ services:
     build:
       context: ./
       dockerfile: tg_client/client.dockerfile
+    command: [ "-with_mTLS=${WITH_MTLS}" ]
     env_file:
       - .env
     restart: always
+    volumes:
+      - ./certs:/app/certs
     depends_on:
       redis:
         condition: service_started

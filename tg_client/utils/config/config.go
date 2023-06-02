@@ -1,48 +1,56 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
-type envConfigKeeper struct {
-	envs map[string]string
+type configKeeper struct {
 }
 
-func New(envs map[string]string) *envConfigKeeper {
-	return &envConfigKeeper{envs: envs}
+func New() *configKeeper {
+	return &configKeeper{}
 }
 
-func (k *envConfigKeeper) Get() (Config, error) {
+func (k *configKeeper) Get() (Config, error) {
 	err := k.checkEnvs()
 	if err != nil {
 		return Config{}, err
 	}
 
 	cfg := Config{
-		Client: Client{
-			Host: k.envs[clientHost],
-			Port: k.envs[clientPort],
+		TelegramAPIKey: os.Getenv(telegramAPIKey),
+		Server: Server{
+			Host:     os.Getenv(serverHost),
+			Port:     os.Getenv(serverPort),
+			Login:    os.Getenv(serverLogin),
+			Password: os.Getenv(serverPassword),
 		},
 		Redis: Redis{
-			Host:     k.envs[redisHost],
-			Port:     k.envs[redisPort],
-			Password: k.envs[redisPassword],
+			Host:     os.Getenv(redisHost),
+			Port:     os.Getenv(redisPort),
+			Password: os.Getenv(redisPassword),
 		},
 	}
 
 	return cfg, nil
 }
 
-func (k *envConfigKeeper) checkEnvs() error {
+func (k *configKeeper) checkEnvs() error {
 	needEnvs := []string{
-		clientHost,
-		clientPort,
+		telegramAPIKey,
 		redisHost,
 		redisPort,
 		redisPassword,
+		serverHost,
+		serverPort,
+		serverLogin,
+		serverPassword,
 	}
 
 	notFound := make([]string, 0, len(needEnvs))
 	for _, env := range needEnvs {
-		_, ok := k.envs[env]
+		_, ok := os.LookupEnv(env)
 		if !ok {
 			notFound = append(notFound, env)
 		}
