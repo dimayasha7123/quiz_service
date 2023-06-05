@@ -4,5 +4,5 @@ type Config []Client
 
 type Client struct {
 	Login    string `yaml:"login"`
-	Password int    `yaml:"password"`
+	Password string `yaml:"password"`
 }

@@ -36,7 +36,7 @@ services:
     build:
       context: ./
       dockerfile: server/server.dockerfile
-    command: [ "-with_mTLS=${WITH_MTLS}" ]
+    command: [ "-with_mTLS=${WITH_MTLS}", "-with_basic_auth=${WITH_BASIC_AUTH}"]
     env_file:
       - .env
     ports:
@@ -66,7 +66,7 @@ services:
     build:
       context: ./
       dockerfile: tg_client/client.dockerfile
-    command: [ "-with_mTLS=${WITH_MTLS}" ]
+    command: [ "-with_mTLS=${WITH_MTLS}", "-with_basic_auth=${WITH_BASIC_AUTH}"]
     env_file:
       - .env
     restart: always

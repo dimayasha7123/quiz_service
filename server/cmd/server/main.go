@@ -55,6 +55,7 @@ var (
 	keyPath               = "certs/server.key"
 	caPath                = "certs/ca.crt"
 	withMTLS              = false
+	withBasicAuth         = false
 )
 
 func main() {
@@ -70,6 +71,7 @@ func main() {
 	flag.StringVar(&keyPath, "key_path", keyPath, "path to server.key file")
 	flag.StringVar(&caPath, "ca_path", caPath, "path to ca.crt file")
 	flag.BoolVar(&withMTLS, "with_mTLS", withMTLS, "enable mTLS")
+	flag.BoolVar(&withBasicAuth, "with_basic_auth", withBasicAuth, "enable basic auth")
 	flag.Parse()
 
 	configKeeper := config.New()
@@ -79,22 +81,16 @@ func main() {
 	}
 	logger.Log.Infof("Config unmarshalled: %+v", cfg)
 
-	cfgBytes, err := os.ReadFile(allowedClientsCfgPath)
+	aClCfgBytes, err := os.ReadFile(allowedClientsCfgPath)
 	if err != nil {
 		logger.Log.Fatalf("Can't read allowed clients config file: %v", err)
 	}
-	cfgKeeper := allowed_clients_config.New(cfgBytes)
-	allowedClientsCfg, err := cfgKeeper.Get()
+	aClCfgKeeper := allowed_clients_config.New(aClCfgBytes)
+	allowedClientsCfg, err := aClCfgKeeper.Get()
 	if err != nil {
 		logger.Log.Fatalf("Can't get allowed clients config: %v", err)
 	}
 	logger.Log.Infof("Read allowed clients config: %+v", allowedClientsCfg)
-
-	if withMTLS {
-		logger.Log.Infof("mTLS enabled")
-	} else {
-		logger.Log.Infof("Insecure mode")
-	}
 
 	ctx := context.Background()
 
@@ -115,11 +111,14 @@ func main() {
 	}
 	logger.Log.Infof("Listening TCP at %s", netAddr)
 
-	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(mw.LogInterceptor),
+	opts := make([]grpc.ServerOption, 0, 2)
+	interceptors := []grpc.UnaryServerInterceptor{
+		mw.LogInterceptor,
 	}
 
 	if withMTLS {
+		logger.Log.Infof("mTLS enabled")
+
 		cert, err := tls.LoadX509KeyPair(crtPath, keyPath)
 		if err != nil {
 			logger.Log.Fatalf("Can't read cert key pair: %v", err)
@@ -142,8 +141,27 @@ func main() {
 			Certificates: []tls.Certificate{cert},
 			ClientCAs:    certPool,
 		})))
+	} else {
+		logger.Log.Infof("Insecure mode")
 	}
 
+	if withBasicAuth {
+		if !withMTLS {
+			logger.Log.Fatalf("Can't enable basic auth without using mTLS! Enable \"withMTLS\" flag")
+		}
+		logger.Log.Infof("Basic auth enabled")
+
+		authKeeper, err := mw.NewAuthKeeper(allowedClientsCfg)
+		if err != nil {
+			logger.Log.Fatalf("Can't create auth keeper: %v", err)
+		}
+
+		interceptors = append(interceptors, authKeeper.AuthInterceptor)
+	} else {
+		logger.Log.Infof("Basic auth disabled")
+	}
+
+	opts = append(opts, grpc.ChainUnaryInterceptor(interceptors...))
 	grpcServer := grpc.NewServer(opts...)
 	api.RegisterQuizServiceServer(grpcServer, qserver)
 	logger.Log.Info("Create and register gRPC server")

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	pb "github.com/dimayasha7123/quiz_service/server/pkg/api"
 	"github.com/dimayasha7123/quiz_service/tg_client/internal/app"
+	"github.com/dimayasha7123/quiz_service/tg_client/internal/auth"
 	"github.com/dimayasha7123/quiz_service/tg_client/internal/db"
 	"github.com/dimayasha7123/quiz_service/tg_client/internal/repository"
 	"github.com/dimayasha7123/quiz_service/tg_client/utils/config"
@@ -22,11 +23,12 @@ import (
 )
 
 var (
-	hostname = "localhost"
-	crtPath  = "certs/client.crt"
-	keyPath  = "certs/client.key"
-	caPath   = "certs/ca.crt"
-	withMTLS = false
+	hostname      = "localhost"
+	crtPath       = "certs/client.crt"
+	keyPath       = "certs/client.key"
+	caPath        = "certs/ca.crt"
+	withMTLS      = false
+	withBasicAuth = false
 )
 
 func main() {
@@ -41,6 +43,7 @@ func main() {
 	flag.StringVar(&keyPath, "key_path", keyPath, "path to client.key file")
 	flag.StringVar(&caPath, "ca_path", caPath, "path to ca.crt file")
 	flag.BoolVar(&withMTLS, "with_mTLS", withMTLS, "enable mTLS")
+	flag.BoolVar(&withBasicAuth, "with_basic_auth", withBasicAuth, "enable basic auth")
 	flag.Parse()
 
 	configKeeper := config.New()
@@ -50,15 +53,11 @@ func main() {
 	}
 	logger.Log.Infof("Config unmarshalled: %+v", cfg)
 
-	if withMTLS {
-		logger.Log.Infof("mTLS enabled")
-	} else {
-		logger.Log.Infof("Insecure mode")
-	}
-
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 
 	if withMTLS {
+		logger.Log.Infof("mTLS enabled")
+
 		cert, err := tls.LoadX509KeyPair(crtPath, keyPath)
 		if err != nil {
 			logger.Log.Fatalf("Can't read cert key pair: %v", err)
@@ -83,6 +82,20 @@ func main() {
 				RootCAs:      certPool,
 			})),
 		}
+	} else {
+		logger.Log.Infof("Insecure mode")
+	}
+
+	if withBasicAuth {
+		if !withMTLS {
+			logger.Log.Fatalf("Can't enable basic auth without using mTLS! Enable \"withMTLS\" flag")
+		}
+		logger.Log.Infof("Basic auth enabled")
+
+		authData := auth.New(cfg.Server.Login, cfg.Server.Password)
+		opts = append(opts, grpc.WithPerRPCCredentials(authData))
+	} else {
+		logger.Log.Infof("Basic auth disabled")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
