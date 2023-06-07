@@ -61,11 +61,6 @@ func (k authKeeper) AuthInterceptor(ctx context.Context, req interface{}, info *
 
 	validErr := k.valid(auth)
 
-	//
-	//logger.Log.Infow("auth interceptor",
-	//	"valid", valid,
-	//	"login",
-	//)
 	if validErr != nil {
 		errMsg := fmt.Sprintf("invalid credentials: %v", validErr)
 		logger.Log.Infow("auth interceptor",
