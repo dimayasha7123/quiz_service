@@ -17,6 +17,11 @@ type UserQuizIDs struct {
 	QuizID int64
 }
 
+type Results struct {
+	UserResults UserResults
+	TopResults  TopResults
+}
+
 type UserResults struct {
 	Place  int64
 	Points int64
@@ -32,6 +37,11 @@ type ResultRow struct {
 type Question struct {
 	Title   string
 	Answers Answers
+}
+
+type QuestionInfo struct {
+	Exist    bool
+	Question Question
 }
 
 type Answers []Answer

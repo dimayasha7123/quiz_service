@@ -6,8 +6,6 @@ import (
 	"github.com/dimayasha7123/quiz_service/server/pkg/api"
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app"
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain"
-	"github.com/dimayasha7123/quiz_service/utils/logger"
-	"strconv"
 )
 
 type GetTopByQuizReq struct {
@@ -15,8 +13,7 @@ type GetTopByQuizReq struct {
 }
 
 type GetTopByQuizResp struct {
-	UserResults *app.UserResults
-	TopResults  app.TopResults
+	Results app.Results
 }
 
 type getTopByQuizHandler struct {
@@ -42,42 +39,7 @@ func (h getTopByQuizHandler) Handle(ctx context.Context, req GetTopByQuizReq) (G
 		QuizID: req.UserQuizIDs.QuizID,
 	})
 
-	ret := GetTopByQuizResp{}
-	if qcResp.UserResults != nil && qcResp.UserResults.Place != 0 && qcResp.UserResults.PointCount != 0 {
-		ret.UserResults = &app.UserResults{
-			Place:  qcResp.UserResults.Place,
-			Points: int64(qcResp.UserResults.PointCount),
-		}
-	}
+	results := convertResultsFromApiToApp(ctx, h.sessions, qcResp)
 
-	if len(qcResp.QuizTop.Results) != 0 {
-		topResults := make(app.TopResults, 0, len(qcResp.QuizTop.Results))
-
-		for _, result := range qcResp.QuizTop.Results {
-			topResults = append(topResults, app.ResultRow{
-				Username: h.getName(ctx, result.Name),
-				Points:   result.Place,
-			})
-		}
-
-		ret.TopResults = topResults
-	}
-
-	return ret, nil
-}
-
-func (h getTopByQuizHandler) getName(ctx context.Context, name string) string {
-	id, err := strconv.ParseInt(name, 10, 64)
-	if err != nil {
-		logger.Log.Errorf("can't convert ID = %v from string to int: %v", name, err)
-		return name
-	}
-
-	user, err := h.sessions.GetUserByID(ctx, id)
-	if err != nil {
-		logger.Log.Errorf("can't get user by id = %v from sessions: %v", id, err)
-		return name
-	}
-
-	return user.Name
+	return GetTopByQuizResp{Results: results}, nil
 }

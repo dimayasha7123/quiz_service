@@ -14,7 +14,7 @@ type StartQuizReq struct {
 }
 
 type StartQuizResp struct {
-	Question app.Question
+	Success bool
 }
 
 type startQuizHandler struct {
@@ -72,25 +72,5 @@ func (h startQuizHandler) Handle(ctx context.Context, req StartQuizReq) (StartQu
 		return StartQuizResp{}, fmt.Errorf("can't start new quiz party for user: %v", err)
 	}
 
-	questExists, question, err := h.sessions.GetCurrentQuestionForUser(ctx, req.UserQuizIDs.UserID)
-	if err != nil {
-		return StartQuizResp{}, fmt.Errorf("can't get current question for user with id = %v: %v", req.UserQuizIDs.UserID, err)
-	}
-	if !questExists {
-		return StartQuizResp{}, fmt.Errorf("no questions for new quiz party")
-	}
-
-	answers := make(app.Answers, 0, len(question.Answers))
-	for _, answer := range question.Answers {
-		answers = append(answers, app.Answer{
-			Title:  answer.Title,
-			Picked: answer.Picked,
-		})
-	}
-	ret := app.Question{
-		Title:   question.Title,
-		Answers: answers,
-	}
-
-	return StartQuizResp{Question: ret}, nil
+	return StartQuizResp{Success: true}, nil
 }

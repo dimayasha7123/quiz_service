@@ -13,6 +13,8 @@ type User struct {
 	Party         Party
 }
 
+// TODO: add constructor
+
 type Party struct {
 	ID              int64
 	CurrentQuestion int64
@@ -32,8 +34,6 @@ type Answer struct {
 	Title  string
 	Picked bool
 }
-
-// for new
 
 type NewParty struct {
 	ID        int64
@@ -86,18 +86,56 @@ func (u *User) StartNewQuiz(newParty NewParty) error {
 	return nil
 }
 
-func (u *User) GetCurrentQuestion() (bool, Question, error) {
+func (u *User) currentQuestionExists() (bool, error) {
 	if !u.inQuiz() {
-		return false, Question{}, fmt.Errorf("user not in quiz")
+		return false, fmt.Errorf("user not in quiz")
 	}
 
 	if len(u.Party.Questions) == 0 {
-		return false, Question{}, fmt.Errorf("no questions in current party")
+		return false, fmt.Errorf("no questions in current party")
 	}
 
-	if u.Party.CurrentQuestion >= int64(len(u.Party.Questions)) {
+	return u.Party.CurrentQuestion < int64(len(u.Party.Questions)), nil
+}
+
+func (u *User) GetCurrentQuestion() (bool, Question, error) {
+	exists, err := u.currentQuestionExists()
+	if err != nil {
+		return false, Question{}, fmt.Errorf("no existing questions for this user: %v", err)
+	}
+
+	if !exists {
 		return false, Question{}, nil
 	}
 
 	return true, u.Party.Questions[u.Party.CurrentQuestion], nil
+}
+
+func (u *User) ConfirmQuestion() error {
+	exists, err := u.currentQuestionExists()
+	if err != nil {
+		return fmt.Errorf("can't check if current question exists: %v", err)
+	}
+
+	if !exists {
+		return fmt.Errorf("no existing questions for this user: %v", err)
+	}
+
+	u.Party.CurrentQuestion++
+
+	return nil
+}
+
+func (u *User) EndQuiz() error {
+	exists, err := u.currentQuestionExists()
+	if err != nil {
+		return fmt.Errorf("can't check if current question exists: %v", err)
+	}
+	if exists {
+		return fmt.Errorf("can't end quiz, not answered questions exists")
+	}
+
+	u.State = states.Lobby
+
+	return nil
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain/states"
+	"github.com/dimayasha7123/quiz_service/utils/logger"
+	"strconv"
 	"sync"
 )
 
@@ -13,10 +15,10 @@ type Sessions struct {
 	data  map[int64]User
 }
 
-func NewSessions(ctx context.Context, repo repository) (Sessions, error) {
+func NewSessions(ctx context.Context, repo repository) (*Sessions, error) {
 	users, err := repo.GetAllUsers(ctx)
 	if err != nil {
-		return Sessions{}, fmt.Errorf("can't get users from repo: %v", err)
+		return nil, fmt.Errorf("can't get users from repo: %v", err)
 	}
 
 	data := make(map[int64]User)
@@ -36,10 +38,10 @@ func NewSessions(ctx context.Context, repo repository) (Sessions, error) {
 	}
 
 	if len(doubled) != 0 {
-		return Sessions{}, fmt.Errorf("can't create data storage, find doubled ids: %v", doubled)
+		return nil, fmt.Errorf("can't create data storage, find doubled ids: %v", doubled)
 	}
 
-	return Sessions{
+	return &Sessions{
 		mutex: &sync.RWMutex{},
 		repo:  repo,
 		data:  data,
@@ -136,4 +138,54 @@ func (s *Sessions) GetCurrentQuestionForUser(ctx context.Context, id int64) (boo
 		return false, Question{}, fmt.Errorf("can't get current question: %v", err)
 	}
 	return questExists, question, nil
+}
+
+func (s *Sessions) ConfirmQuestionForUser(ctx context.Context, id int64) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	user, ok := s.data[id]
+	if !ok {
+		return fmt.Errorf("no such user")
+	}
+
+	err := user.ConfirmQuestion()
+	if err != nil {
+		return fmt.Errorf("can't confirm question for user with id = %v: %v", id, err)
+	}
+
+	return nil
+}
+
+func (s *Sessions) EndQuizForUser(ctx context.Context, id int64) error {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	user, ok := s.data[id]
+	if !ok {
+		return fmt.Errorf("no such user")
+	}
+
+	err := user.EndQuiz()
+	if err != nil {
+		return fmt.Errorf("can't check if user can end quiz: %v", err)
+	}
+
+	return nil
+}
+
+func (s *Sessions) GetName(ctx context.Context, name string) string {
+	id, err := strconv.ParseInt(name, 10, 64)
+	if err != nil {
+		logger.Log.Errorf("can't convert ID = %v from string to int: %v", name, err)
+		return name
+	}
+
+	user, err := s.GetUserByID(ctx, id)
+	if err != nil {
+		logger.Log.Errorf("can't get user by id = %v from sessions: %v", id, err)
+		return name
+	}
+
+	return user.Name
 }
