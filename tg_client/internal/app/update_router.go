@@ -44,23 +44,23 @@ func (b *bclient) updateRouter(ctx context.Context, update models.Update) (strin
 			return "", err
 		}
 
-	//case command == "/confirm":
-	//	text, err = b.confirmHandler(ctx, update)
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//
-	//case command == "/pick":
-	//	text, err = b.pickUnpickHandler(ctx, update, commandArgs, true)
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//
-	//case command == "/unpick":
-	//	text, err = b.pickUnpickHandler(ctx, update, commandArgs, false)
-	//	if err != nil {
-	//		return "", err
-	//	}
+	case command == "/confirm":
+		text, err = b.confirmHandler(ctx, update)
+		if err != nil {
+			return "", err
+		}
+
+	case command == "/pick":
+		text, err = b.pickUnpickHandler(ctx, update, commandArgs, true)
+		if err != nil {
+			return "", err
+		}
+
+	case command == "/unpick":
+		text, err = b.pickUnpickHandler(ctx, update, commandArgs, false)
+		if err != nil {
+			return "", err
+		}
 
 	case command == "/gettopbyquiz":
 		text, err = b.getTopByQuizHandler(ctx, update, commandArgs)

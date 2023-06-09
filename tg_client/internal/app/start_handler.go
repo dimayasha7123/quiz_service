@@ -38,6 +38,7 @@ func (b *bclient) startHandler(ctx context.Context, update models.Update) (strin
 	}
 
 	text := fmt.Sprintf(fmtText, user.Name)
+	text += "\n\nUse /getquizes for begin!"
 
 	return text, nil
 }
