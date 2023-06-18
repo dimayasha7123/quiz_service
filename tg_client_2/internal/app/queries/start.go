@@ -16,20 +16,20 @@ type StartResp struct {
 	NewUser bool
 }
 
-type startHandler struct {
+type StartHandler struct {
 	sessions   domain.Sessions
 	quizClient api.QuizServiceClient
 }
 
-func NewStartHandler(sessions domain.Sessions, quizClient api.QuizServiceClient) startHandler {
-	return startHandler{
+func NewStartHandler(sessions domain.Sessions, quizClient api.QuizServiceClient) StartHandler {
+	return StartHandler{
 		sessions:   sessions,
 		quizClient: quizClient,
 	}
 }
 
-func (h startHandler) Handle(ctx context.Context, req StartReq) (StartResp, error) {
-	exists := h.sessions.CheckUserExistsByID(ctx, req.UserInfo.UserID)
+func (h StartHandler) Handle(ctx context.Context, req StartReq) (StartResp, error) {
+	exists := h.sessions.UserExistsByID(ctx, req.UserInfo.UserID)
 	if exists {
 		return StartResp{NewUser: false}, nil
 	}

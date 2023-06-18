@@ -13,7 +13,14 @@ type User struct {
 	Party         Party
 }
 
-// TODO: add constructor
+func NewUser(id, qsid int64, name string) User {
+	return User{
+		TelegramID:    id,
+		QuizServiceID: qsid,
+		Name:          name,
+		State:         states.Lobby,
+	}
+}
 
 type Party struct {
 	ID              int64
@@ -98,7 +105,7 @@ func (u *User) currentQuestionExists() (bool, error) {
 	return u.Party.CurrentQuestion < int64(len(u.Party.Questions)), nil
 }
 
-func (u *User) GetCurrentQuestion() (bool, Question, error) {
+func (u *User) CurrentQuestion() (bool, Question, error) {
 	exists, err := u.currentQuestionExists()
 	if err != nil {
 		return false, Question{}, fmt.Errorf("no existing questions for this user: %v", err)
@@ -136,6 +143,42 @@ func (u *User) EndQuiz() error {
 	}
 
 	u.State = states.Lobby
+	u.Party = Party{}
+
+	return nil
+}
+
+func (u *User) SwitchAnswer(id int64) error {
+	exists, err := u.currentQuestionExists()
+	if err != nil {
+		return fmt.Errorf("can't check if current question exists: %v", err)
+	}
+
+	if !exists {
+		return fmt.Errorf("no existing questions for this user: %v", err)
+	}
+
+	answers := u.Party.Questions[u.Party.CurrentQuestion].Answers
+	if len(answers) == 0 {
+		return fmt.Errorf("no answers for current question")
+	}
+
+	if id >= int64(len(answers)) {
+		return fmt.Errorf("no answer with id = %v for current question", id)
+	}
+
+	answers[id].Picked = !answers[id].Picked
+
+	return nil
+}
+
+func (u *User) BreakSession() error {
+	if !u.inQuiz() {
+		return fmt.Errorf("user not in quiz")
+	}
+
+	u.State = states.Lobby
+	u.Party = Party{}
 
 	return nil
 }

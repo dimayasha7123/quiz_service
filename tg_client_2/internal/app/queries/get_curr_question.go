@@ -7,31 +7,31 @@ import (
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain"
 )
 
-type GetCurrQuestReq struct {
+type CurrentQuestReq struct {
 	UserID int64
 }
 
-type GetCurrQuestResp struct {
+type CurrentQuestResp struct {
 	QuestionInfo app.QuestionInfo
 }
 
-type getCurrQuestHandler struct {
+type CurrentQuestHandler struct {
 	sessions domain.Sessions
 }
 
-func NewGetCurrQuestHandler(sessions domain.Sessions) getCurrQuestHandler {
-	return getCurrQuestHandler{
+func NewCurrentQuestHandler(sessions domain.Sessions) CurrentQuestHandler {
+	return CurrentQuestHandler{
 		sessions: sessions,
 	}
 }
 
-func (h getCurrQuestHandler) Handle(ctx context.Context, req GetCurrQuestReq) (GetCurrQuestResp, error) {
-	questExists, question, err := h.sessions.GetCurrentQuestionForUser(ctx, req.UserID)
+func (h CurrentQuestHandler) Handle(ctx context.Context, req CurrentQuestReq) (CurrentQuestResp, error) {
+	questExists, question, err := h.sessions.CurrentQuestionForUser(ctx, req.UserID)
 	if err != nil {
-		return GetCurrQuestResp{}, fmt.Errorf("can't get current question for user with id = %v: %v", req.UserID, err)
+		return CurrentQuestResp{}, fmt.Errorf("can't get current question for user with id = %v: %v", req.UserID, err)
 	}
 	if !questExists {
-		return GetCurrQuestResp{
+		return CurrentQuestResp{
 			QuestionInfo: app.QuestionInfo{
 				Exist:    false,
 				Question: app.Question{},
@@ -51,7 +51,7 @@ func (h getCurrQuestHandler) Handle(ctx context.Context, req GetCurrQuestReq) (G
 		Answers: answers,
 	}
 
-	return GetCurrQuestResp{
+	return CurrentQuestResp{
 		QuestionInfo: app.QuestionInfo{
 			Exist:    true,
 			Question: questionApp,

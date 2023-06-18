@@ -21,7 +21,7 @@ func New(repo repository, apiKey string, quizClient pb.QuizServiceClient) *bclie
 		repo:       repo,
 		apiKey:     apiKey,
 		quizClient: quizClient,
-		httpClient: http.Client{Timeout: 10 * time.Second},
+		httpClient: http.Client{Timeout: 30 * time.Second},
 		users:      models.NewSyncMap(),
 	}
 	return &bc

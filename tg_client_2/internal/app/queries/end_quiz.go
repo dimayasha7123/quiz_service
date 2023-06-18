@@ -16,25 +16,25 @@ type EnqQuizResp struct {
 	Results app.Results
 }
 
-type endQuizHandler struct {
+type EndQuizHandler struct {
 	sessions   domain.Sessions
 	quizClient api.QuizServiceClient
 }
 
-func NewEndQuizHandler(sessions domain.Sessions, quizClient api.QuizServiceClient) endQuizHandler {
-	return endQuizHandler{
+func NewEndQuizHandler(sessions domain.Sessions, quizClient api.QuizServiceClient) EndQuizHandler {
+	return EndQuizHandler{
 		sessions:   sessions,
 		quizClient: quizClient,
 	}
 }
 
-func (h endQuizHandler) Handle(ctx context.Context, req EnqQuizReq) (EnqQuizResp, error) {
+func (h EndQuizHandler) Handle(ctx context.Context, req EnqQuizReq) (EnqQuizResp, error) {
 	err := h.sessions.EndQuizForUser(ctx, req.UserID)
 	if err != nil {
 		return EnqQuizResp{}, fmt.Errorf("can't end quiz for user with id = %v: %v", req.UserID, err)
 	}
 
-	user, err := h.sessions.GetUserByID(ctx, req.UserID)
+	user, err := h.sessions.UserByID(ctx, req.UserID)
 
 	answers := make([]*api.QuestionRightAnswers, 0, 10)
 	for _, quest := range user.Party.Questions {

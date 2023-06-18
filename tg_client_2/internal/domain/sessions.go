@@ -15,10 +15,10 @@ type Sessions struct {
 	data  map[int64]User
 }
 
-func NewSessions(ctx context.Context, repo repository) (*Sessions, error) {
+func NewSessions(ctx context.Context, repo repository) (Sessions, error) {
 	users, err := repo.GetAllUsers(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("can't get users from repo: %v", err)
+		return Sessions{}, fmt.Errorf("can't get users from repo: %v", err)
 	}
 
 	data := make(map[int64]User)
@@ -29,26 +29,21 @@ func NewSessions(ctx context.Context, repo repository) (*Sessions, error) {
 			doubled = append(doubled, user.ID)
 			continue
 		}
-		data[user.ID] = User{
-			TelegramID:    user.ID,
-			QuizServiceID: user.QSID,
-			Name:          user.Name,
-			State:         states.Lobby,
-		}
+		data[user.ID] = NewUser(user.ID, user.QSID, user.Name)
 	}
 
 	if len(doubled) != 0 {
-		return nil, fmt.Errorf("can't create data storage, find doubled ids: %v", doubled)
+		return Sessions{}, fmt.Errorf("can't create data storage, find doubled ids: %v", doubled)
 	}
 
-	return &Sessions{
+	return Sessions{
 		mutex: &sync.RWMutex{},
 		repo:  repo,
 		data:  data,
 	}, nil
 }
 
-func (s *Sessions) CheckUserExistsByID(ctx context.Context, id int64) bool {
+func (s *Sessions) UserExistsByID(ctx context.Context, id int64) bool {
 	s.mutex.RLock()
 	_, ok := s.data[id]
 	s.mutex.RUnlock()
@@ -56,7 +51,7 @@ func (s *Sessions) CheckUserExistsByID(ctx context.Context, id int64) bool {
 	return ok
 }
 
-func (s *Sessions) GetUserByID(ctx context.Context, id int64) (User, error) {
+func (s *Sessions) UserByID(ctx context.Context, id int64) (User, error) {
 	s.mutex.RLock()
 	user, ok := s.data[id]
 	s.mutex.RUnlock()
@@ -88,19 +83,14 @@ func (s *Sessions) AddUser(ctx context.Context, id int64, qsid int64, name strin
 		return fmt.Errorf("can't add user to repo: %v", err)
 	}
 
-	user := User{
-		TelegramID:    id,
-		QuizServiceID: qsid,
-		Name:          name,
-		State:         states.Lobby,
-	}
+	user := NewUser(id, qsid, name)
 
 	s.data[user.TelegramID] = user
 
 	return nil
 }
 
-func (s *Sessions) GetUserState(ctx context.Context, id int64) (states.State, error) {
+func (s *Sessions) UserState(ctx context.Context, id int64) (states.State, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -124,7 +114,7 @@ func (s *Sessions) StartNewQuizForUser(ctx context.Context, id int64, newParty N
 	return user.StartNewQuiz(newParty)
 }
 
-func (s *Sessions) GetCurrentQuestionForUser(ctx context.Context, id int64) (bool, Question, error) {
+func (s *Sessions) CurrentQuestionForUser(ctx context.Context, id int64) (bool, Question, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -133,7 +123,7 @@ func (s *Sessions) GetCurrentQuestionForUser(ctx context.Context, id int64) (boo
 		return false, Question{}, fmt.Errorf("no such user")
 	}
 
-	questExists, question, err := user.GetCurrentQuestion()
+	questExists, question, err := user.CurrentQuestion()
 	if err != nil {
 		return false, Question{}, fmt.Errorf("can't get current question: %v", err)
 	}
@@ -158,8 +148,8 @@ func (s *Sessions) ConfirmQuestionForUser(ctx context.Context, id int64) error {
 }
 
 func (s *Sessions) EndQuizForUser(ctx context.Context, id int64) error {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
 	user, ok := s.data[id]
 	if !ok {
@@ -181,11 +171,45 @@ func (s *Sessions) GetName(ctx context.Context, name string) string {
 		return name
 	}
 
-	user, err := s.GetUserByID(ctx, id)
+	user, err := s.UserByID(ctx, id)
 	if err != nil {
 		logger.Log.Errorf("can't get user by id = %v from sessions: %v", id, err)
 		return name
 	}
 
 	return user.Name
+}
+
+func (s *Sessions) SwitchAnswerForUser(ctx context.Context, id int64, ansID int64) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	user, ok := s.data[id]
+	if !ok {
+		return fmt.Errorf("no such user")
+	}
+
+	err := user.SwitchAnswer(ansID)
+	if err != nil {
+		return fmt.Errorf("can't switch answer with id = %v: %v", id, err)
+	}
+
+	return nil
+}
+
+func (s *Sessions) BreakSessionForUser(ctx context.Context, id int64) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	user, ok := s.data[id]
+	if !ok {
+		return fmt.Errorf("no such user")
+	}
+
+	err := user.BreakSession()
+	if err != nil {
+		return fmt.Errorf("can't break session for user with id = %v", err)
+	}
+
+	return nil
 }

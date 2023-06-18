@@ -8,24 +8,24 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type GetQuizzesResp struct {
+type QuizzesResp struct {
 	QuizList app.QuizList
 }
 
-type getQuizzesHandler struct {
+type QuizzesHandler struct {
 	quizClient api.QuizServiceClient
 }
 
-func NewGetQuizzesHandler(quizClient api.QuizServiceClient) getQuizzesHandler {
-	return getQuizzesHandler{
+func NewQuizzesHandler(quizClient api.QuizServiceClient) QuizzesHandler {
+	return QuizzesHandler{
 		quizClient: quizClient,
 	}
 }
 
-func (h getQuizzesHandler) Handle(ctx context.Context) (GetQuizzesResp, error) {
+func (h QuizzesHandler) Handle(ctx context.Context) (QuizzesResp, error) {
 	qcResp, err := h.quizClient.GetQuizList(ctx, &emptypb.Empty{})
 	if err != nil {
-		return GetQuizzesResp{}, fmt.Errorf("can't get quizzes from quiz service")
+		return QuizzesResp{}, fmt.Errorf("can't get quizzes from quiz service")
 	}
 
 	quizList := make(app.QuizList, 0, len(qcResp.QList))
@@ -36,7 +36,7 @@ func (h getQuizzesHandler) Handle(ctx context.Context) (GetQuizzesResp, error) {
 		})
 	}
 
-	return GetQuizzesResp{
+	return QuizzesResp{
 		QuizList: quizList,
 	}, nil
 }

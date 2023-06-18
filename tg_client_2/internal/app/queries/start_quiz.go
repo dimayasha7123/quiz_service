@@ -17,25 +17,25 @@ type StartQuizResp struct {
 	Success bool
 }
 
-type startQuizHandler struct {
+type StartQuizHandler struct {
 	sessions   domain.Sessions
 	quizClient api.QuizServiceClient
 }
 
-func NewStartQuizHandler(sessions domain.Sessions, quizClient api.QuizServiceClient) startQuizHandler {
-	return startQuizHandler{
+func NewStartQuizHandler(sessions domain.Sessions, quizClient api.QuizServiceClient) StartQuizHandler {
+	return StartQuizHandler{
 		sessions:   sessions,
 		quizClient: quizClient,
 	}
 }
 
-func (h startQuizHandler) Handle(ctx context.Context, req StartQuizReq) (StartQuizResp, error) {
-	user, err := h.sessions.GetUserByID(ctx, req.UserQuizIDs.UserID)
+func (h StartQuizHandler) Handle(ctx context.Context, req StartQuizReq) (StartQuizResp, error) {
+	user, err := h.sessions.UserByID(ctx, req.UserQuizIDs.UserID)
 	if err != nil {
 		return StartQuizResp{}, fmt.Errorf("can't get user from sessions: %v", err)
 	}
 
-	state, err := h.sessions.GetUserState(ctx, req.UserQuizIDs.UserID)
+	state, err := h.sessions.UserState(ctx, req.UserQuizIDs.UserID)
 	if err != nil {
 		return StartQuizResp{}, fmt.Errorf("can't get user from sessions: %v", err)
 	}

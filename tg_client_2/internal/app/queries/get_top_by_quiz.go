@@ -8,30 +8,30 @@ import (
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain"
 )
 
-type GetTopByQuizReq struct {
+type TopByQuizReq struct {
 	UserQuizIDs app.UserQuizIDs
 }
 
-type GetTopByQuizResp struct {
+type TopByQuizResp struct {
 	Results app.Results
 }
 
-type getTopByQuizHandler struct {
+type TopByQuizHandler struct {
 	sessions   domain.Sessions
 	quizClient api.QuizServiceClient
 }
 
-func NewGetTopByQuizHandler(sessions domain.Sessions, quizClient api.QuizServiceClient) getTopByQuizHandler {
-	return getTopByQuizHandler{
+func NewTopByQuizHandler(sessions domain.Sessions, quizClient api.QuizServiceClient) TopByQuizHandler {
+	return TopByQuizHandler{
 		sessions:   sessions,
 		quizClient: quizClient,
 	}
 }
 
-func (h getTopByQuizHandler) Handle(ctx context.Context, req GetTopByQuizReq) (GetTopByQuizResp, error) {
-	user, err := h.sessions.GetUserByID(ctx, req.UserQuizIDs.UserID)
+func (h TopByQuizHandler) Handle(ctx context.Context, req TopByQuizReq) (TopByQuizResp, error) {
+	user, err := h.sessions.UserByID(ctx, req.UserQuizIDs.UserID)
 	if err != nil {
-		return GetTopByQuizResp{}, fmt.Errorf("can't get user from sessions: %v", err)
+		return TopByQuizResp{}, fmt.Errorf("can't get user from sessions: %v", err)
 	}
 
 	qcResp, err := h.quizClient.GetQuizTop(ctx, &api.QuizUserInfo{
@@ -41,5 +41,5 @@ func (h getTopByQuizHandler) Handle(ctx context.Context, req GetTopByQuizReq) (G
 
 	results := convertResultsFromApiToApp(ctx, h.sessions, qcResp)
 
-	return GetTopByQuizResp{Results: results}, nil
+	return TopByQuizResp{Results: results}, nil
 }

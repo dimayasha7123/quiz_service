@@ -50,3 +50,8 @@ type Answer struct {
 	Title  string
 	Picked bool
 }
+
+type UserAnswersIDs struct {
+	UserID   int64
+	AnswerID int64
+}
