@@ -54,11 +54,19 @@ func (s *service) getQuizzesKeyboard(ctx context.Context) ([][]replyButton, erro
 	}
 
 	keyboard := make([][]replyButton, 0, len(quizzes.QuizList))
-	for _, quiz := range quizzes.QuizList {
-		keyboard = append(keyboard, []replyButton{{
-			Text:         quiz.Title,
-			CallbackData: callback.NewData(commands.Quiz, fmt.Sprint(quiz.ID), quiz.Title).String(),
-		}})
+	for i := 0; i+1 < len(quizzes.QuizList); i += 2 {
+		first := quizzes.QuizList[i]
+		second := quizzes.QuizList[i+1]
+		keyboard = append(keyboard, []replyButton{
+			{
+				Text:         first.Title,
+				CallbackData: callback.NewData(commands.Quiz, fmt.Sprint(first.ID), first.Title).String(),
+			},
+			{
+				Text:         second.Title,
+				CallbackData: callback.NewData(commands.Quiz, fmt.Sprint(second.ID), second.Title).String(),
+			},
+		})
 	}
 
 	return keyboard, nil

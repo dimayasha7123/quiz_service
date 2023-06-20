@@ -77,28 +77,31 @@ func (s *service) runIteration(ctx context.Context, lastUpdateID int64) (int64, 
 	// TODO: обработать кастомных ошибок и их проверка для ответа пользователю, в чем проблема (no such command)
 
 	for _, up := range ups.Result {
-		var err error
-		var errID int64
+		up := up
 
-		switch {
-		case up.CallbackQuery != nil:
-			err = s.routeCallbackQuery(ctx, *up.CallbackQuery)
-			errID = up.CallbackQuery.From.ID
-		case up.Message != nil:
-			err = s.routeMessage(ctx, *up.Message)
-			errID = up.Message.From.ID
-		default:
-			return lastUpdateID, fmt.Errorf("no new message or callback query in update with id = %")
-		}
+		go func(ctx context.Context) {
+			var err error
+			var errID int64
 
-		if err != nil {
-			logger.Log.Errorf("can't route request: %v", err)
-			err = s.sendMessage(ctx, errID, errorText, nil)
-			if err != nil {
-				logger.Log.Errorf("can't send error message to user with id = %v: %v", errID, err)
+			switch {
+			case up.CallbackQuery != nil:
+				err = s.routeCallbackQuery(ctx, *up.CallbackQuery)
+				errID = up.CallbackQuery.From.ID
+			case up.Message != nil:
+				err = s.routeMessage(ctx, *up.Message)
+				errID = up.Message.From.ID
+			default:
+				logger.Log.Errorf("no new message or callback query in update with id = %")
 			}
-		}
 
+			if err != nil {
+				logger.Log.Errorf("can't route request: %v", err)
+				err = s.sendMessage(ctx, errID, errorText, nil)
+				if err != nil {
+					logger.Log.Errorf("can't send error message to user with id = %v: %v", errID, err)
+				}
+			}
+		}(ctx)
 	}
 
 	if len(ups.Result) != 0 {
