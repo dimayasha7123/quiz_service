@@ -8,11 +8,65 @@ import (
 	"github.com/dimayasha7123/quiz_service/utils/logger"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
+func (qac *QuizPartyApiClient) GetPartyData(tag string) (PartyData, error) {
+	getUrl := url.URL{
+		Scheme: "https",
+		Host:   "quizapi.io",
+		Path:   "/api/v1/questions",
+	}
+
+	query := getUrl.Query()
+	if tag != "" {
+		query.Add("tags", tag)
+	}
+	query.Add("limit", fmt.Sprint(questCount))
+	getUrl.RawQuery = query.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, getUrl.String(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("can't create http request: %v", err)
+	}
+	req.Header.Set("X-Api-Key", qac.apiKey)
+
+	resp, err := qac.cl.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("can't do http request: %v", err)
+	}
+	defer func() {
+		err = resp.Body.Close()
+		if err != nil {
+			logger.Log.Errorf("can't close http response body: %v", err)
+		}
+	}()
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	pd := PartyData{}
+	err = json.Unmarshal(bytes, &pd)
+	if err != nil {
+		return nil, err
+	}
+
+	return pd, nil
+}
+
 func (qac *QuizPartyApiClient) GetParty(tag string) (*models.Party, error) {
-	getUrl := fmt.Sprintf("https://quizapi.io/api/v1/questions?tags=%s&limit=%d", tag, questCount)
-	req, err := http.NewRequest(http.MethodGet, getUrl, nil)
+	getUrl := url.URL{
+		Scheme: "https",
+		Host:   "quizapi.io",
+		Path:   "/api/v1/questions",
+	}
+
+	query := getUrl.Query()
+	if tag != "" {
+		query.Add("tags", tag)
+	}
+	query.Add("limit", fmt.Sprint(questCount))
+	getUrl.RawQuery = query.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, getUrl.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("can't create http request: %v", err)
 	}

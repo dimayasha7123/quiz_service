@@ -27,12 +27,16 @@ create table response_report
     penalty_time     integer not null
 );
 insert into quiz (name)
-values ('JavaScript'),
-       ('Linux'),
-       ('Docker'),
-       ('BASH'),
-       ('Kubernetes'),
-       ('HTML');
+values  ('DevOps'),
+        ('JavaScript'),
+        ('PHP'),
+        ('BASH'),
+        ('HTML'),
+        ('Laravel'),
+        ('Docker'),
+        ('Linux'),
+        ('Kubernetes'),
+        ('MySQL');
 -- +goose StatementEnd
 
 -- +goose Down
