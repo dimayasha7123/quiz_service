@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/dimayasha7123/quiz_service/server/pkg/api"
-	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app"
+	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app/models"
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain"
 )
 
 type TopByQuizReq struct {
-	UserQuizIDs app.UserQuizIDs
+	UserQuizIDs models.UserQuizIDs
 }
 
 type TopByQuizResp struct {
-	Results app.Results
+	Results models.Results
 }
 
 type TopByQuizHandler struct {

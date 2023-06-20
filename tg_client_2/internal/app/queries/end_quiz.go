@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/dimayasha7123/quiz_service/server/pkg/api"
-	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app"
+	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app/models"
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain"
 )
 
@@ -13,7 +13,7 @@ type EnqQuizReq struct {
 }
 
 type EnqQuizResp struct {
-	Results app.Results
+	Results models.Results
 }
 
 type EndQuizHandler struct {
@@ -35,6 +35,9 @@ func (h EndQuizHandler) Handle(ctx context.Context, req EnqQuizReq) (EnqQuizResp
 	}
 
 	user, err := h.sessions.UserByID(ctx, req.UserID)
+	if err != nil {
+		return EnqQuizResp{}, fmt.Errorf("can't get user by id = %v: %v", req.UserID, err)
+	}
 
 	answers := make([]*api.QuestionRightAnswers, 0, 10)
 	for _, quest := range user.Party.Questions {
@@ -55,6 +58,9 @@ func (h EndQuizHandler) Handle(ctx context.Context, req EnqQuizReq) (EnqQuizResp
 			Answers:     answers,
 		},
 	)
+	if err != nil {
+		return EnqQuizResp{}, fmt.Errorf("can't send answers to quiz server with quizPartyID = %v: %v", user.Party.ID, err)
+	}
 
 	results := convertResultsFromApiToApp(ctx, h.sessions, qcResp)
 

@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/dimayasha7123/quiz_service/server/pkg/api"
-	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app"
+	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app/models"
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain"
 )
 
 type StartReq struct {
-	UserInfo app.UserInfo
+	UserInfo models.UserInfo
 }
 
 type StartResp struct {

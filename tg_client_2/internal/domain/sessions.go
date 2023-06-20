@@ -111,23 +111,30 @@ func (s *Sessions) StartNewQuizForUser(ctx context.Context, id int64, newParty N
 		return fmt.Errorf("no such user")
 	}
 
-	return user.StartNewQuiz(newParty)
+	err := user.StartNewQuiz(newParty)
+	if err != nil {
+		return err
+	}
+
+	s.data[id] = user
+
+	return nil
 }
 
-func (s *Sessions) CurrentQuestionForUser(ctx context.Context, id int64) (bool, Question, error) {
+func (s *Sessions) CurrentQuestionForUser(ctx context.Context, id int64) (bool, int64, Question, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
 	user, ok := s.data[id]
 	if !ok {
-		return false, Question{}, fmt.Errorf("no such user")
+		return false, 0, Question{}, fmt.Errorf("no such user")
 	}
 
 	questExists, question, err := user.CurrentQuestion()
 	if err != nil {
-		return false, Question{}, fmt.Errorf("can't get current question: %v", err)
+		return false, 0, Question{}, fmt.Errorf("can't get current question: %v", err)
 	}
-	return questExists, question, nil
+	return questExists, user.Party.CurrentQuestion + 1, question, nil
 }
 
 func (s *Sessions) ConfirmQuestionForUser(ctx context.Context, id int64) error {
@@ -143,6 +150,8 @@ func (s *Sessions) ConfirmQuestionForUser(ctx context.Context, id int64) error {
 	if err != nil {
 		return fmt.Errorf("can't confirm question for user with id = %v: %v", id, err)
 	}
+
+	s.data[id] = user
 
 	return nil
 }
@@ -160,6 +169,8 @@ func (s *Sessions) EndQuizForUser(ctx context.Context, id int64) error {
 	if err != nil {
 		return fmt.Errorf("can't check if user can end quiz: %v", err)
 	}
+
+	s.data[id] = user
 
 	return nil
 }
@@ -194,6 +205,8 @@ func (s *Sessions) SwitchAnswerForUser(ctx context.Context, id int64, ansID int6
 		return fmt.Errorf("can't switch answer with id = %v: %v", id, err)
 	}
 
+	s.data[id] = user
+
 	return nil
 }
 
@@ -208,8 +221,10 @@ func (s *Sessions) BreakSessionForUser(ctx context.Context, id int64) error {
 
 	err := user.BreakSession()
 	if err != nil {
-		return fmt.Errorf("can't break session for user with id = %v", err)
+		return fmt.Errorf("can't break session: %v", err)
 	}
+
+	s.data[id] = user
 
 	return nil
 }

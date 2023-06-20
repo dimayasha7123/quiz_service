@@ -3,12 +3,12 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app"
+	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app/models"
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain"
 )
 
 type SwitchReq struct {
-	UserAnswersIDs app.UserAnswersIDs
+	UserAnswersIDs models.UserAnswersIDs
 }
 
 type SwitchHandler struct {

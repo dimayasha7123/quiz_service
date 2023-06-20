@@ -1,4 +1,4 @@
-package app
+package models
 
 type UserInfo struct {
 	UserID   int64
@@ -41,6 +41,7 @@ type Question struct {
 
 type QuestionInfo struct {
 	Exist    bool
+	Number   int64
 	Question Question
 }
 

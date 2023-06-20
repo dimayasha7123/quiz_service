@@ -1,20 +1,16 @@
-package queries
+package commands
 
 import (
 	"context"
 	"fmt"
 	"github.com/dimayasha7123/quiz_service/server/pkg/api"
-	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app"
+	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app/models"
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain"
 	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/domain/states"
 )
 
 type StartQuizReq struct {
-	UserQuizIDs app.UserQuizIDs
-}
-
-type StartQuizResp struct {
-	Success bool
+	UserQuizIDs models.UserQuizIDs
 }
 
 type StartQuizHandler struct {
@@ -29,18 +25,18 @@ func NewStartQuizHandler(sessions domain.Sessions, quizClient api.QuizServiceCli
 	}
 }
 
-func (h StartQuizHandler) Handle(ctx context.Context, req StartQuizReq) (StartQuizResp, error) {
+func (h StartQuizHandler) Handle(ctx context.Context, req StartQuizReq) error {
 	user, err := h.sessions.UserByID(ctx, req.UserQuizIDs.UserID)
 	if err != nil {
-		return StartQuizResp{}, fmt.Errorf("can't get user from sessions: %v", err)
+		return fmt.Errorf("can't get user from sessions: %v", err)
 	}
 
 	state, err := h.sessions.UserState(ctx, req.UserQuizIDs.UserID)
 	if err != nil {
-		return StartQuizResp{}, fmt.Errorf("can't get user from sessions: %v", err)
+		return fmt.Errorf("can't get user from sessions: %v", err)
 	}
 	if state == states.Quiz {
-		return StartQuizResp{}, fmt.Errorf("user now in party, can't start new before finishing previous")
+		return fmt.Errorf("user now in party, can't start new before finishing previous")
 	}
 
 	qcResp, err := h.quizClient.StartQuizParty(ctx, &api.QuizUserInfo{
@@ -48,7 +44,7 @@ func (h StartQuizHandler) Handle(ctx context.Context, req StartQuizReq) (StartQu
 		QuizID: req.UserQuizIDs.QuizID,
 	})
 	if err != nil {
-		return StartQuizResp{}, fmt.Errorf("can't start new quiz party via quiz service")
+		return fmt.Errorf("can't start new quiz party via quiz service")
 	}
 
 	questions := make(domain.NewQuestions, 0, len(qcResp.Questions))
@@ -69,8 +65,8 @@ func (h StartQuizHandler) Handle(ctx context.Context, req StartQuizReq) (StartQu
 
 	err = h.sessions.StartNewQuizForUser(ctx, req.UserQuizIDs.UserID, party)
 	if err != nil {
-		return StartQuizResp{}, fmt.Errorf("can't start new quiz party for user: %v", err)
+		return fmt.Errorf("can't start new quiz party for user: %v", err)
 	}
 
-	return StartQuizResp{Success: true}, nil
+	return nil
 }

@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/dimayasha7123/quiz_service/server/pkg/api"
-	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app"
+	"github.com/dimayasha7123/quiz_service/tg_client_2/internal/app/models"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type QuizzesResp struct {
-	QuizList app.QuizList
+	QuizList models.QuizList
 }
 
 type QuizzesHandler struct {
@@ -28,9 +28,9 @@ func (h QuizzesHandler) Handle(ctx context.Context) (QuizzesResp, error) {
 		return QuizzesResp{}, fmt.Errorf("can't get quizzes from quiz service")
 	}
 
-	quizList := make(app.QuizList, 0, len(qcResp.QList))
+	quizList := make(models.QuizList, 0, len(qcResp.QList))
 	for _, quiz := range qcResp.QList {
-		quizList = append(quizList, app.Quiz{
+		quizList = append(quizList, models.Quiz{
 			ID:    quiz.ID,
 			Title: quiz.Name,
 		})

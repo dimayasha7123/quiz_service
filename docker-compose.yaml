@@ -65,7 +65,7 @@ services:
   client:
     build:
       context: ./
-      dockerfile: tg_client/client.dockerfile
+      dockerfile: tg_client_2/client.dockerfile
     command: [ "-with_mTLS=${WITH_MTLS}", "-with_basic_auth=${WITH_BASIC_AUTH}"]
     env_file:
       - .env

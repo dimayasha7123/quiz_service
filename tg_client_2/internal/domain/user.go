@@ -143,7 +143,7 @@ func (u *User) EndQuiz() error {
 	}
 
 	u.State = states.Lobby
-	u.Party = Party{}
+	//u.Party = Party{}
 
 	return nil
 }

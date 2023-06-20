@@ -13,13 +13,13 @@ type Queries struct {
 	QuizzesHandler   queries.QuizzesHandler
 	TopByQuizHandler queries.TopByQuizHandler
 	StartHandler     queries.StartHandler
-	StartQuizHandler queries.StartQuizHandler
 }
 
 type Commands struct {
-	BreakHandler   commands.BreakHandler
-	ConfirmHandler commands.ConfirmHandler
-	SwitchHandler  commands.SwitchHandler
+	BreakHandler     commands.BreakHandler
+	ConfirmHandler   commands.ConfirmHandler
+	SwitchHandler    commands.SwitchHandler
+	StartQuizHandler commands.StartQuizHandler
 }
 
 type App struct {
@@ -35,12 +35,12 @@ func New(sessions domain.Sessions, quizClient api.QuizServiceClient) App {
 			QuizzesHandler:   queries.NewQuizzesHandler(quizClient),
 			TopByQuizHandler: queries.NewTopByQuizHandler(sessions, quizClient),
 			StartHandler:     queries.NewStartHandler(sessions, quizClient),
-			StartQuizHandler: queries.NewStartQuizHandler(sessions, quizClient),
 		},
 		Commands: Commands{
-			BreakHandler:   commands.NewBreakHandler(sessions),
-			ConfirmHandler: commands.NewConfirmHandler(sessions, quizClient),
-			SwitchHandler:  commands.NewSwitchHandler(sessions),
+			BreakHandler:     commands.NewBreakHandler(sessions),
+			ConfirmHandler:   commands.NewConfirmHandler(sessions, quizClient),
+			SwitchHandler:    commands.NewSwitchHandler(sessions),
+			StartQuizHandler: commands.NewStartQuizHandler(sessions, quizClient),
 		},
 	}
 }
